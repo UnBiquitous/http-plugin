@@ -25,11 +25,16 @@ public class WebSocketConnection extends ClientConnection {
 	private InputStream in;
 	private PipedOutputStream inWriter;
 	
-	public UUID connectionId;
+	private UUID connectionId;
 
 	public WebSocketConnection(NetworkDevice clientDevice, Session session) {
+		this(clientDevice, session, UUID.randomUUID());
+	}
+	
+	public WebSocketConnection(NetworkDevice clientDevice, Session session, UUID connectionId) {
 		super(clientDevice);
 		this.session = session;
+		this.connectionId = connectionId;
 		initStreams(session);
 	}
 
@@ -88,5 +93,9 @@ public class WebSocketConnection extends ClientConnection {
 			}
 			this.reset();
 		}
+	}
+
+	public UUID getConnectionId() {
+		return connectionId;
 	}
 }

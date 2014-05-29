@@ -52,7 +52,6 @@ public class WebSocketEndpoint{
 	private void handleConnection(String message, Session session)
 			throws IOException {
 		UUID connectionID = getConnectionID(message);
-		
 		String content = getContent(message);
 		
 		WebSocketConnection conn = channel.getConnection(session.getId(), connectionID);

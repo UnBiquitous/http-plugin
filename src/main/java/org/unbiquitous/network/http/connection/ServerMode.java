@@ -24,10 +24,8 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 	private Integer port;
 
 	private WebSocketChannelManager channel;
-	private ConnectionManagerListener listener;
 
 	public void init(InitialProperties props, ConnectionManagerListener listener) {
-		this.listener = listener;
 		this.port = props.getInt("ubiquitos.websocket.port");
 		if (port == null ){
 			throw new RuntimeException("You must set properties for "
@@ -55,7 +53,6 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 			throws DeploymentException {
 		ServerContainer wscontainer = WebSocketServerContainerInitializer
 				.configureContext(context);
-//		channel = new WebSocketChannelManager(listener);
 		WebSocketEndpoint.setChannel(channel);
 		wscontainer.addEndpoint(WebSocketEndpoint.class);
 		LOGGER.finest(String.format("This device is %s", channel.getAvailableNetworkDevice().getNetworkDeviceName()));

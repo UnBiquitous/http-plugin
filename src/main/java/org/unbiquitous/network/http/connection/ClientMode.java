@@ -26,10 +26,8 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 	private URI uri;
 
 	private WebSocketChannelManager channel;
-	private ConnectionManagerListener listener;
 
 	public void init(InitialProperties props, ConnectionManagerListener listener) throws Exception {
-		this.listener = listener;
 		Integer port = props.getInt("ubiquitos.websocket.port");
 		String server = props.getString("ubiquitos.websocket.server");
 		if (port == null || server == null) {
@@ -53,7 +51,6 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 		session = container.connectToServer(WebSocketEndpoint.class, uri);
 		session.setMaxIdleTimeout(DEFAULT_IDLE_TIMEOUT);
 		
-//		channel = new WebSocketChannelManager(listener);
 		LOGGER.finest(String.format("This device is %s", channel.getAvailableNetworkDevice().getNetworkDeviceName()));
 		WebSocketEndpoint.setChannel(channel);
 		

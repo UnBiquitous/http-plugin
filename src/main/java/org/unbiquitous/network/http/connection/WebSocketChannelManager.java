@@ -19,11 +19,9 @@ public class WebSocketChannelManager implements ChannelManager {
 	private WebSocketDevice device = new WebSocketDevice();
 	private ConnectionManagerListener listener;
 	
-//	private Map<String, WebSocketConnection> connections = new HashMap<>();
 	private Map<UUID, WebSocketConnection> connections = new HashMap<>();
 	private Map<String, Session> sessions = new HashMap<>();
 	private Map<String, String> sessionToUUID = new HashMap<>();
-//	private Set<String> busyConnections = new HashSet<>();
 	private Set<UUID> busyConnections = new HashSet<>();
 	
 	public WebSocketChannelManager(ConnectionManagerListener listener) {
@@ -44,19 +42,16 @@ public class WebSocketChannelManager implements ChannelManager {
 	
 	public void addConnection(String uuid, String sessionId, Session session){
 		sessions.put(uuid, session);
-//		WebSocketDevice clientDevice = new WebSocketDevice(uuid);
-//		WebSocketConnection conn = new WebSocketConnection(clientDevice, session);
-//		connections.put(uuid, conn);
 		sessionToUUID.put(sessionId, uuid);
 	}
 	
 	public void notifyListener(WebSocketConnection conn){
 		UUID connectionID = null;
 		synchronized (busyConnections) {
-			if (!busyConnections.contains(conn.connectionId)){
-				connectionID = conn.connectionId;
+			if (!busyConnections.contains(conn.getConnectionId())){
+				connectionID = conn.getConnectionId();
 			}else{
-				busyConnections.remove(conn.connectionId);
+				busyConnections.remove(conn.getConnectionId());
 			}
 		}
 		if (connectionID != null){
@@ -67,7 +62,6 @@ public class WebSocketChannelManager implements ChannelManager {
 	}
 	
 	public boolean knows(String uuid){
-//		return connections.containsKey(uuid);
 		return sessions.containsKey(uuid);
 	}
 	
@@ -79,22 +73,18 @@ public class WebSocketChannelManager implements ChannelManager {
 		if (conn == null){
 			Session session = sessions.get(uuid);
 			WebSocketDevice clientDevice = new WebSocketDevice(uuid);
-			conn = new WebSocketConnection(clientDevice, session);
-			conn.connectionId = connectionId;
+			conn = new WebSocketConnection(clientDevice, session, connectionId);
 		}
 		return conn;
 	}
 	
 	@Override
 	public ClientConnection openActiveConnection(String uuid) throws NetworkException, IOException {
-//		busyConnections.add(uuid);
-//		return connections.get(uuid);
 		Session session = sessions.get(uuid);
 		WebSocketDevice clientDevice = new WebSocketDevice(uuid);
 		WebSocketConnection conn = new WebSocketConnection(clientDevice, session);
-		conn.connectionId = UUID.randomUUID();
-		connections.put(conn.connectionId, conn);
-		busyConnections.add(conn.connectionId);
+		connections.put(conn.getConnectionId(), conn);
+		busyConnections.add(conn.getConnectionId());
 		return conn;
 	}
 
