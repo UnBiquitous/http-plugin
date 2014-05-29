@@ -2,7 +2,6 @@ package jetty_web_socket;
 import java.net.URI;
 
 import javax.websocket.ContainerProvider;
-import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
