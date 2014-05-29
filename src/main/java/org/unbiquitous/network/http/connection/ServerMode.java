@@ -1,5 +1,6 @@
-package org.unbiquitous.network.http.server;
+package org.unbiquitous.network.http.connection;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.websocket.DeploymentException;
@@ -9,7 +10,6 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.jsr356.server.ServerContainer;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
-import org.unbiquitous.network.http.WebSocketChannelManager;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
@@ -34,6 +34,7 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 					+ "'ubiquitos.websocket.port' "
 					+ "in order to use WebSocket server mode.");
 		}
+		channel = new WebSocketChannelManager(listener);
 	}
 
 	public void start() throws Exception {
@@ -44,7 +45,9 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 
 	private void startServer() throws Exception {
 		server.start();
-		server.dump(System.err);
+		if(LOGGER.getLevel().intValue() <= Level.FINE.intValue()){
+			server.dump(System.err);
+		}
 		server.join();
 	}
 
@@ -52,9 +55,9 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 			throws DeploymentException {
 		ServerContainer wscontainer = WebSocketServerContainerInitializer
 				.configureContext(context);
-		channel = new WebSocketChannelManager(listener);
-		WebServerSocket.setChannel(channel);
-		wscontainer.addEndpoint(WebServerSocket.class);
+//		channel = new WebSocketChannelManager(listener);
+		WebSocketEndpoint.setChannel(channel);
+		wscontainer.addEndpoint(WebSocketEndpoint.class);
 		LOGGER.finest(String.format("This device is %s", channel.getAvailableNetworkDevice().getNetworkDeviceName()));
 	}
 

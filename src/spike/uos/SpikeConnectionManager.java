@@ -35,7 +35,7 @@ public class SpikeConnectionManager {
 			InitialProperties properties) {
 		properties.put("ubiquitos.websocket.mode", "server");
 		
-		mng.setProperties(properties);
+		mng.init(properties);
 		mng.setConnectionManagerListener(new ConnectionManagerListener(){
 			public void handleClientConnection(ClientConnection clientConnection) {
 				try {
@@ -65,7 +65,7 @@ public class SpikeConnectionManager {
 		properties.put("ubiquitos.websocket.mode", "client");
 		properties.put("ubiquitos.websocket.server", args[0]);
 		
-		mng.setProperties(properties);
+		mng.init(properties);
 		mng.setConnectionManagerListener(new ConnectionManagerListener(){
 			public void handleClientConnection(ClientConnection conn) {
 				System.out.println("Don't care for "+conn.getClientDevice().getNetworkDeviceName());

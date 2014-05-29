@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.unbiquitous.network.http.client.ClientMode;
-import org.unbiquitous.network.http.server.ServerMode;
+import org.unbiquitous.network.http.connection.ClientMode;
+import org.unbiquitous.network.http.connection.ServerMode;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
@@ -38,13 +38,21 @@ public class WebSocketConnectionManager implements ConnectionManager {
 
 	private ChannelManager channel;
 	
-	@Override
-	public void run() {
+	public void init(InitialProperties properties) {
+		this.properties = properties;
 		try {
 			mode = getMode();
 			mode.init(properties, listener);
-			mode.start();
 			channel = mode.getChannelManager();
+		} catch (Exception e) {
+			LOGGER.severe(e.getMessage());
+		}
+	}
+	
+	@Override
+	public void run() {
+		try {
+			mode.start();
 		} catch (Throwable t) {
 			LOGGER.severe(t.getMessage());
 		}
@@ -62,10 +70,6 @@ public class WebSocketConnectionManager implements ConnectionManager {
 
 	public void setConnectionManagerListener(ConnectionManagerListener listener) {
 		this.listener = listener;
-	}
-
-	public void setProperties(InitialProperties properties) {
-		this.properties = properties;
 	}
 
 	public InitialProperties getProperties() {

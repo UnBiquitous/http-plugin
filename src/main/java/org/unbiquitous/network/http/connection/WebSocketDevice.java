@@ -1,4 +1,4 @@
-package org.unbiquitous.network.http;
+package org.unbiquitous.network.http.connection;
 
 import java.util.Date;
 import java.util.UUID;

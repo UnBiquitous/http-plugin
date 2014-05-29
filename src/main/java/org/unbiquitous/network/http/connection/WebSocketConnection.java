@@ -1,4 +1,4 @@
-package org.unbiquitous.network.http;
+package org.unbiquitous.network.http.connection;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -8,13 +8,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.logging.Logger;
 
 import javax.websocket.Session;
 
+import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 
 public class WebSocketConnection extends ClientConnection {
+	private static final Logger LOGGER = UOSLogging.getLogger(); 
+	
 	private Session session;
 	private OutputStream out;
 	private InputStream in;
@@ -39,6 +43,7 @@ public class WebSocketConnection extends ClientConnection {
 	public void write(String content){
 		try {
 			inWriter.write(content.getBytes());
+			inWriter.flush();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -72,7 +77,11 @@ public class WebSocketConnection extends ClientConnection {
 		@Override
 		public void flush() throws IOException {
 			super.flush();
-			session.getBasicRemote().sendText(this.toString());
+			String content = this.toString();
+			if (content != null){
+				LOGGER.finest(String.format("Flushing content '%s' from Output Stream.", content));
+				session.getBasicRemote().sendText(content);
+			}
 			this.reset();
 		}
 	}

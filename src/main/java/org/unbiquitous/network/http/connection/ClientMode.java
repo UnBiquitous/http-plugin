@@ -1,4 +1,4 @@
-package org.unbiquitous.network.http.client;
+package org.unbiquitous.network.http.connection;
 
 import java.io.IOException;
 import java.net.URI;
@@ -9,9 +9,7 @@ import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.unbiquitous.network.http.WebSocketChannelManager;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
-import org.unbiquitous.network.http.server.WebServerSocket;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
@@ -41,6 +39,7 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 							+ "in order to use WebSocket client mode.");
 		}
 		setup(server, port);
+		channel = new WebSocketChannelManager(listener);
 	}
 
 	private void setup(String server, int port) throws Exception {
@@ -51,12 +50,12 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 	}
 
 	public void start() throws Exception {
-		session = container.connectToServer(WebServerSocket.class, uri);
+		session = container.connectToServer(WebSocketEndpoint.class, uri);
 		session.setMaxIdleTimeout(DEFAULT_IDLE_TIMEOUT);
 		
-		channel = new WebSocketChannelManager(listener);
+//		channel = new WebSocketChannelManager(listener);
 		LOGGER.finest(String.format("This device is %s", channel.getAvailableNetworkDevice().getNetworkDeviceName()));
-		WebServerSocket.setChannel(channel);
+		WebSocketEndpoint.setChannel(channel);
 		
 		// TODO: Must happen on every timeout/2
 		sendHi();
