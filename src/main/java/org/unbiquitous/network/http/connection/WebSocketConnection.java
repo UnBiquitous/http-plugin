@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.websocket.Session;
@@ -23,6 +24,8 @@ public class WebSocketConnection extends ClientConnection {
 	private OutputStream out;
 	private InputStream in;
 	private PipedOutputStream inWriter;
+	
+	public UUID connectionId;
 
 	public WebSocketConnection(NetworkDevice clientDevice, Session session) {
 		super(clientDevice);
@@ -79,6 +82,7 @@ public class WebSocketConnection extends ClientConnection {
 			super.flush();
 			String content = this.toString();
 			if (content != null){
+				content = connectionId+":"+content;
 				LOGGER.finest(String.format("Flushing content '%s' from Output Stream.", content));
 				session.getBasicRemote().sendText(content);
 			}

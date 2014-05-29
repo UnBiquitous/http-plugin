@@ -3,8 +3,7 @@ package org.unbiquitous.network.http.connection;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,11 +51,37 @@ public class WebSocketEndpoint{
 
 	private void handleConnection(String message, Session session)
 			throws IOException {
-		WebSocketConnection conn = channel.getConnection(session.getId());
-		DataInputStream in = conn.getDataInputStream();
-		in.skipBytes(in.available());
-		conn.write(message);
+		UUID connectionID = getConnectionID(message);
+		
+		String content = getContent(message);
+		
+		WebSocketConnection conn = channel.getConnection(session.getId(), connectionID);
+		writeContentToStream(content, conn);
 		channel.notifyListener(conn);
+	}
+
+	private String getContent(String message) {
+		int point_ = message.indexOf(":");
+		String content = message.substring(point_+1);
+		return content;
+	}
+
+	private UUID getConnectionID(String message) {
+		int point = message.indexOf(":");
+		String id = message.substring(0, point);
+		UUID connectionID = UUID.fromString(id);
+		return connectionID;
+	}
+
+	private void writeContentToStream(String content, WebSocketConnection conn)
+			throws IOException {
+		DataInputStream in = conn.getDataInputStream();
+		clearTrailingContent(in);
+		conn.write(content);
+	}
+
+	private void clearTrailingContent(DataInputStream in) throws IOException {
+		in.skipBytes(in.available());
 	}
 
 	private void handleHello(String message, Session session) {
@@ -79,9 +104,7 @@ public class WebSocketEndpoint{
 		String remoteName = remoteAddress.getHostName();
 		LOGGER.finer(String.format("Just met with %s at %s", uuid, remoteName));
 		
-		WebSocketDevice clientDevice = new WebSocketDevice(uuid);
-		WebSocketConnection conn = new WebSocketConnection(clientDevice, session);
-		channel.addConnection(uuid, session.getId(), conn);
+		channel.addConnection(uuid, session.getId(), session);
 	}
 
 	@OnClose
