@@ -2,6 +2,7 @@ package org.unbiquitous.network.http;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unbiquitous.network.http.connection.ClientMode;
@@ -54,7 +55,7 @@ public class WebSocketConnectionManager implements ConnectionManager {
 		try {
 			mode.start();
 		} catch (Throwable t) {
-			LOGGER.severe(t.getMessage());
+			LOGGER.log(Level.SEVERE,t.getMessage(),t);
 		}
 
 	}
@@ -77,8 +78,11 @@ public class WebSocketConnectionManager implements ConnectionManager {
 	}
 
 	public void tearDown() {
-		// TODO Auto-generated method stub
-
+		try {
+			mode.stop();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public NetworkDevice getNetworkDevice() {

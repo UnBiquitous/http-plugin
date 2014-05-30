@@ -30,7 +30,11 @@ public class WebSocketServerSpike{
 
             server.start();
             server.dump(System.err);
+//            Thread.sleep(1000);
+//            System.out.println("Client now");
+//            EventClient.main(new String[]{"localhost"});
             server.join();
+            
         }
         catch (Throwable t)
         {

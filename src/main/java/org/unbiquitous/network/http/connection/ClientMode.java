@@ -1,7 +1,9 @@
 package org.unbiquitous.network.http.connection;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.websocket.ContainerProvider;
@@ -38,6 +40,7 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 		}
 		setup(server, port);
 		channel = new WebSocketChannelManager(listener);
+		WebSocketEndpoint.setChannel(channel);
 	}
 
 	private void setup(String server, int port) throws Exception {
@@ -48,7 +51,18 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 	}
 
 	public void start() throws Exception {
-		session = container.connectToServer(WebSocketEndpoint.class, uri);
+		int retries = 0;
+		while(retries < 10){
+			try {
+				session = container.connectToServer(WebSocketEndpoint.class, uri);
+				retries = 11;
+			} catch(ConnectException e){
+				LOGGER.warning("Couldn't connect to server. Retrying ...");
+				try {Thread.sleep(100);} catch (InterruptedException e1) {}
+				retries ++;
+			}
+		}
+		
 		session.setMaxIdleTimeout(DEFAULT_IDLE_TIMEOUT);
 		
 		LOGGER.finest(String.format("This device is %s", channel.getAvailableNetworkDevice().getNetworkDeviceName()));
@@ -66,7 +80,9 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 	}
 
 	public void stop() throws Exception {
-		session.close();
+		if (session != null){
+			session.close();
+		}
 		if (container instanceof LifeCycle) {
 			((LifeCycle) container).stop();
 		}

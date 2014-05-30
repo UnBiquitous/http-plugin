@@ -33,6 +33,7 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 					+ "in order to use WebSocket server mode.");
 		}
 		channel = new WebSocketChannelManager(listener);
+		WebSocketEndpoint.setChannel(channel);
 	}
 
 	public void start() throws Exception {

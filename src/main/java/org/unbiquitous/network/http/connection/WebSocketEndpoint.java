@@ -26,7 +26,11 @@ public class WebSocketEndpoint{
 	
 	// Hate singletons, but its impossible Jetty WebSockets 
 	// don't allow to control how endpoints are created =[
-	private static WebSocketChannelManager channel;
+	private WebSocketChannelManager channel;
+	
+	public WebSocketEndpoint() {
+		channel = channelStorage.get()[0];
+	}
 	
 	@OnOpen
 	public void onWebSocketConnect(Session sess) {
@@ -117,7 +121,13 @@ public class WebSocketEndpoint{
 	}
 
 	public static void setChannel(WebSocketChannelManager channel) {
-		WebSocketEndpoint.channel = channel;
+		channelStorage.get()[0] = channel;
 	}
+	
+	private static final InheritableThreadLocal<WebSocketChannelManager[]> channelStorage = new InheritableThreadLocal<WebSocketChannelManager[]>() {
+		protected WebSocketChannelManager[] initialValue() {
+			return new WebSocketChannelManager[] { null };
+		}
+	};
 
 }

@@ -11,7 +11,7 @@ import org.eclipse.jetty.util.component.LifeCycle;
 public class EventClient {
 	public static void main(String[] args)
     {
-        URI uri = URI.create("ws://192.168.0.21:8080/events/");
+        URI uri = URI.create(String.format("ws://%s:8080/events/", args[0]));
 
         try
         {
