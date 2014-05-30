@@ -1,6 +1,8 @@
 package org.unbiquitous.network.http.connection;
 
+import java.util.Enumeration;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.websocket.DeploymentException;
@@ -8,6 +10,7 @@ import javax.websocket.DeploymentException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.websocket.jsr356.server.ServerContainer;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
@@ -41,14 +44,23 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 		startServer();
 	}
 
-	private void startServer() throws Exception {
-		server.start();
-		if(LOGGER.getLevel().intValue() <= Level.FINE.intValue()){
-			server.dump(System.err);
-		}
-		server.join();
+	private Server createServer(int port) {
+		Server server = new Server();
+		ServerConnector connector = new ServerConnector(server);
+		connector.setPort(port);
+		connector.setIdleTimeout(DEFAULT_IDLE_TIMEOUT);
+		server.addConnector(connector);
+		return server;
 	}
-
+	
+	private ServletContextHandler createRootServletContext(Server server) {
+		ServletContextHandler context = new ServletContextHandler(
+				ServletContextHandler.SESSIONS);
+		context.setContextPath("/");
+		server.setHandler(context);
+		return context;
+	}
+	
 	private void setEventHandler(ServletContextHandler context)
 			throws DeploymentException {
 		ServerContainer wscontainer = WebSocketServerContainerInitializer
@@ -58,23 +70,14 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 		LOGGER.finest(String.format("This device is %s", channel.getAvailableNetworkDevice().getNetworkDeviceName()));
 	}
 
-	private ServletContextHandler createRootServletContext(Server server) {
-		ServletContextHandler context = new ServletContextHandler(
-				ServletContextHandler.SESSIONS);
-		context.setContextPath("/");
-		server.setHandler(context);
-		return context;
+	private void startServer() throws Exception {
+		server.start();
+		if(LOGGER.getLevel().intValue() <= Level.FINE.intValue()){
+			server.dump(System.err);
+		}
+		server.join();
 	}
-
-	private Server createServer(int port) {
-		Server server = new Server();
-		ServerConnector connector = new ServerConnector(server);
-		connector.setPort(port);
-		connector.setIdleTimeout(DEFAULT_IDLE_TIMEOUT);
-		server.addConnector(connector);
-		return server;
-	}
-
+	
 	public void stop() throws Exception {
 		server.stop();
 	}

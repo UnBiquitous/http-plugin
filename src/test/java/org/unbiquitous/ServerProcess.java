@@ -5,8 +5,8 @@ import org.unbiquitous.network.http.WebSocketRadar;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOS;
 
-class ServerProcess implements Runnable {
-	UOS uos;
+class ServerProcess implements WebSocketIntegrationBaseTest.UOSProcess {
+	private UOS uos;
 	private String port;
 	boolean finishedInit = false;
 
@@ -27,9 +27,16 @@ class ServerProcess implements Runnable {
 		properties.put("ubiquitos.websocket.mode", "server");
 
 		uos = new UOS();
-		uos.init(properties);
+		getUos().init(properties);
 		
 		finishedInit = true;
 	}
-	
+
+	public UOS getUos() {
+		return uos;
+	}
+
+	public boolean isInitialized() {
+		return finishedInit;
+	}
 }

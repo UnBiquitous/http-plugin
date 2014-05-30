@@ -16,8 +16,8 @@ public class ClientServerServiceCallTest extends WebSocketIntegrationBaseTest {
 	@Test public void callASimpleService() throws Exception{
 		Thread.sleep(1000);
 		
-		Gateway gateway = client.uos.getGateway();
-		UpDevice targetDevice = server.uos.getGateway().getCurrentDevice();
+		Gateway gateway = client.getUos().getGateway();
+		UpDevice targetDevice = server.getUos().getGateway().getCurrentDevice();
 		
 		Call listDrivers = new Call("uos.DeviceDriver", "listDrivers");
 		Response drivers = gateway.callService(targetDevice, listDrivers);
@@ -33,8 +33,8 @@ public class ClientServerServiceCallTest extends WebSocketIntegrationBaseTest {
 	@Test public void callAnestedService() throws Exception{
 		Thread.sleep(1000);
 		
-		Gateway gateway = client.uos.getGateway();
-		UpDevice targetDevice = server.uos.getGateway().getCurrentDevice();
+		Gateway gateway = client.getUos().getGateway();
+		UpDevice targetDevice = server.getUos().getGateway().getCurrentDevice();
 		
 		Call handshake = new Call("uos.DeviceDriver", "handshake");
 		handshake.addParameter("device", gateway.getCurrentDevice());

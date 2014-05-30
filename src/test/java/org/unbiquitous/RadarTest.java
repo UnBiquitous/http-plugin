@@ -11,9 +11,9 @@ public class RadarTest extends WebSocketIntegrationBaseTest{
 
 	@Test public void whenConnectedMustStayConnected() throws Exception{
 		Thread.sleep(1*1000);
-		List<UpDevice> serverDevices = server.uos.getGateway().listDevices();
+		List<UpDevice> serverDevices = server.getUos().getGateway().listDevices();
 		assertThat(serverDevices).hasSize(2);
-		List<UpDevice> clientDevices = client.uos.getGateway().listDevices();
+		List<UpDevice> clientDevices = client.getUos().getGateway().listDevices();
 		assertThat(clientDevices).hasSize(2);
 	}
 	

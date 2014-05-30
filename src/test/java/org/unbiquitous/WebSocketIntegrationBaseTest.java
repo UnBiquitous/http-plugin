@@ -2,41 +2,40 @@ package org.unbiquitous;
 
 import org.junit.After;
 import org.junit.Before;
+import org.unbiquitous.uos.core.UOS;
 
 public abstract class WebSocketIntegrationBaseTest {
 	public static final String PORT = "8080";
-	ClientProcess client;
-	ServerProcess server;
+	UOSProcess client;
+	UOSProcess server;
 
 	@Before public void setup(){
-		startServer();
-		startClient();
+		server = startProcess(new ServerProcess(PORT));
+		client = startProcess(new ClientProcess(PORT));
 	}
 
-	private ServerProcess startServer() {
-		server = new ServerProcess(PORT);
-		Thread serverThread = new Thread(server);
-		serverThread.start();
-		Thread.yield();
-		while(!server.finishedInit){
-			Thread.yield();
-		}
-		return server;
-	}
-
-	private ClientProcess startClient() {
-		client = new ClientProcess(PORT);
-		Thread clientThread = new Thread(client);
-		clientThread.start();
-		Thread.yield();
-		while(!client.finishedInit){
-			Thread.yield();
-		}
-		return client;
+	interface UOSProcess extends Runnable{
+		public UOS getUos();
+		public boolean isInitialized();
 	}
 	
+	private UOSProcess startProcess(UOSProcess process) {
+		new Thread(process).start();
+		waitForInitialization(process);
+		return process;
+	}
+
+
+	private void waitForInitialization(UOSProcess process) {
+		Thread.yield();
+		while(!process.isInitialized()){
+			Thread.yield();
+		}
+	}
+
+	
 	@After public void teardown(){
-		client.uos.tearDown();
-		server.uos.tearDown();
+		client.getUos().tearDown();
+		server.getUos().tearDown();
 	}
 }
