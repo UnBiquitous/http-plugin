@@ -57,7 +57,6 @@ public class WebSocketEndpoint{
 			throws IOException {
 		UUID connectionID = getConnectionID(message);
 		String content = getContent(message);
-		
 		WebSocketConnection conn = channel.getConnection(session.getId(), connectionID);
 		writeContentToStream(content, conn);
 		channel.notifyListener(conn);
@@ -91,6 +90,7 @@ public class WebSocketEndpoint{
 		String uuid = message.replaceAll("Hello:", "");
 		if (!channel.knows(uuid)){
 			addConnection(session, uuid);
+			channel.notfyKnowledgeOf(uuid);
 		}
 	}
 

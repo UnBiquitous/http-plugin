@@ -7,12 +7,14 @@ import java.util.logging.Logger;
 
 import org.unbiquitous.network.http.connection.ClientMode;
 import org.unbiquitous.network.http.connection.ServerMode;
+import org.unbiquitous.network.http.connection.WebSocketChannelManager;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
+import org.unbiquitous.uos.core.network.radar.RadarListener;
 
 public class WebSocketConnectionManager implements ConnectionManager {
 
@@ -26,7 +28,7 @@ public class WebSocketConnectionManager implements ConnectionManager {
 		void init(InitialProperties properties, ConnectionManagerListener listener) throws Exception;
 		void start() throws Exception;
 		void stop() throws Exception;
-		ChannelManager getChannelManager();
+		WebSocketChannelManager getChannelManager();
 	}
 	
 	@SuppressWarnings("serial")
@@ -37,8 +39,8 @@ public class WebSocketConnectionManager implements ConnectionManager {
 
 	private ConnectionManagerListener listener;
 
-	private ChannelManager channel;
-	
+	private WebSocketChannelManager channel;
+
 	public void init(InitialProperties properties) {
 		this.properties = properties;
 		try {
@@ -91,5 +93,9 @@ public class WebSocketConnectionManager implements ConnectionManager {
 
 	public ChannelManager getChannelManager() {
 		return channel;
+	}
+
+	public void setRadar(WebSocketRadar radar) {
+		channel.setRadar(radar);
 	}
 }

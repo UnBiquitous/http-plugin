@@ -13,7 +13,6 @@ import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainer
 import org.unbiquitous.network.http.WebSocketConnectionManager;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
-import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
 
 public class ServerMode implements WebSocketConnectionManager.Mode {
@@ -80,7 +79,7 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 		server.stop();
 	}
 
-	public ChannelManager getChannelManager() {
+	public WebSocketChannelManager getChannelManager() {
 		return channel;
 	}
 }

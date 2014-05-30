@@ -16,9 +16,10 @@ public class Spike {
 
 		UOSLogging.setLevel(Level.FINEST);
 		InitialProperties properties = new InitialProperties();
-		properties.put("ubiquitos.connectionManager",
-				WebSocketConnectionManager.class.getName());
-		properties.put("ubiquitos.radar", WebSocketRadar.class.getName());
+		String connMng = WebSocketConnectionManager.class.getName();
+		properties.put("ubiquitos.connectionManager",connMng);
+		String radar = WebSocketRadar.class.getName();
+		properties.put("ubiquitos.radar", radar+"("+connMng+")");
 		properties.put("ubiquitos.websocket.port", "8080");
 
 		if (args.length > 0) {

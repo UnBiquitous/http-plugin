@@ -3,7 +3,6 @@ package org.unbiquitous.network.http.connection;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.websocket.ContainerProvider;
@@ -14,7 +13,6 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
-import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
@@ -88,7 +86,7 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 		}
 	}
 
-	public ChannelManager getChannelManager() {
+	public WebSocketChannelManager getChannelManager() {
 		return channel;
 	}
 }
