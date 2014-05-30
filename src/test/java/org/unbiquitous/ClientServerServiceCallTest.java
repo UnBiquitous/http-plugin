@@ -14,8 +14,6 @@ import org.unbiquitous.uos.core.messageEngine.messages.Response;
 public class ClientServerServiceCallTest extends WebSocketIntegrationBaseTest {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test public void callASimpleService() throws Exception{
-		Thread.sleep(1000);
-		
 		Gateway gateway = client.getUos().getGateway();
 		UpDevice targetDevice = server.getUos().getGateway().getCurrentDevice();
 		
@@ -31,8 +29,6 @@ public class ClientServerServiceCallTest extends WebSocketIntegrationBaseTest {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test public void callAnestedService() throws Exception{
-		Thread.sleep(1000);
-		
 		Gateway gateway = client.getUos().getGateway();
 		UpDevice targetDevice = server.getUos().getGateway().getCurrentDevice();
 		
