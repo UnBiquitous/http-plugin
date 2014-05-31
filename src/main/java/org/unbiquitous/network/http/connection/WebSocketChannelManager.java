@@ -17,7 +17,6 @@ import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListe
 import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
-import org.unbiquitous.uos.core.network.radar.RadarListener;
 
 public class WebSocketChannelManager implements ChannelManager {
 	private WebSocketDevice device = new WebSocketDevice();
@@ -26,7 +25,7 @@ public class WebSocketChannelManager implements ChannelManager {
 	private Map<UUID, WebSocketConnection> connections = new HashMap<>();
 	private Map<String, Session> sessions = new HashMap<>();
 	private Map<String, String> sessionToUUID = new HashMap<>();
-	private Set<UUID> busyConnections = new HashSet<>();
+	private Set<UUID> myOpenedConnections = new HashSet<>();
 	
 	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<>();
 	private WebSocketRadar radar;
@@ -54,24 +53,11 @@ public class WebSocketChannelManager implements ChannelManager {
 	
 	public void notifyListener(WebSocketConnection conn){
 		UUID connectionID = null;
-//		synchronized (busyConnections) {
-//			if (!busyConnections.contains(conn.getConnectionId())){
-//				connectionID = conn.getConnectionId();
-//			}else{
-//				busyConnections.remove(conn.getConnectionId());
-//			}
-//		}
-//		if (connectionID != null){
-//			synchronized (connectionID) {
-//				listener.handleClientConnection(conn);
-//			}
-//		}
-		
 		connectionID = conn.getConnectionId();
 		synchronized (connectionID) {
-			if (!busyConnections.contains(conn.getConnectionId())){
+			if (!myOpenedConnections.contains(conn.getConnectionId())){
 				listener.handleClientConnection(conn);
-				busyConnections.remove(conn.getConnectionId());
+				myOpenedConnections.remove(conn.getConnectionId());
 			}
 		}
 	}
@@ -98,15 +84,11 @@ public class WebSocketChannelManager implements ChannelManager {
 		WebSocketDevice clientDevice = new WebSocketDevice(uuid);
 		WebSocketConnection conn = new WebSocketConnection(clientDevice, session);
 		connections.put(conn.getConnectionId(), conn);
-		busyConnections.add(conn.getConnectionId());
+		myOpenedConnections.add(conn.getConnectionId());
 		return conn;
 	}
 
-	public void setRadarListener(RadarListener radarListener) {
-		
-	}
-	
-	public void notfyKnowledgeOf(String uuid){
+	public void deviceEntered(String uuid){
 		WebSocketDevice device = new WebSocketDevice(uuid);
 		if(radar == null){
 			enteredQueue.add(device);
@@ -115,6 +97,11 @@ public class WebSocketChannelManager implements ChannelManager {
 		}
 	}
 
+	public void deviceLeft(Session session){
+		String uuid = sessionToUUID.get(session.getId());
+		radar.deviceLeft(new WebSocketDevice(uuid));
+	}
+	
 	public void setRadar(WebSocketRadar radar) {
 		this.radar = radar;
 		while(!enteredQueue.isEmpty()){

@@ -90,7 +90,7 @@ public class WebSocketEndpoint{
 		String uuid = message.replaceAll("Hello:", "");
 		if (!channel.knows(uuid)){
 			addConnection(session, uuid);
-			channel.notfyKnowledgeOf(uuid);
+			channel.deviceEntered(uuid);
 		}
 	}
 
@@ -113,6 +113,7 @@ public class WebSocketEndpoint{
 	@OnClose
 	public void onWebSocketClose(CloseReason reason, Session session) {
 		LOGGER.finest("Session "+session.getId()+" Closed: " + reason.getCloseCode());
+		channel.deviceLeft(session);
 	}
 
 	@OnError

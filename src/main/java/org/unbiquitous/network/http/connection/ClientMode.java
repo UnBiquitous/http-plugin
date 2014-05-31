@@ -18,16 +18,23 @@ import org.unbiquitous.uos.core.network.model.NetworkDevice;
 
 public class ClientMode implements WebSocketConnectionManager.Mode {
 	private static final Logger LOGGER = UOSLogging.getLogger();
-	private static final int DEFAULT_IDLE_TIMEOUT = 1*60*1000;
 	public static final String END_POINT = "uos_connect";
 
 	private WebSocketContainer container;
 	private Session session;
 	private URI uri;
+	private Integer idleTimeout = 5*60*1000;
 
 	private WebSocketChannelManager channel;
+	private boolean running = true;
 
 	public void init(InitialProperties props, ConnectionManagerListener listener) throws Exception {
+		initProperties(props);
+		channel = new WebSocketChannelManager(listener);
+		WebSocketEndpoint.setChannel(channel);
+	}
+
+	private void initProperties(InitialProperties props) throws Exception {
 		Integer port = props.getInt("ubiquitos.websocket.port");
 		String server = props.getString("ubiquitos.websocket.server");
 		if (port == null || server == null) {
@@ -36,9 +43,10 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 							+ "'ubiquitos.websocket.port' and 'ubiquitos.websocket.server' "
 							+ "in order to use WebSocket client mode.");
 		}
+		if (props.containsKey("ubiquitos.websocket.timeout")){
+			idleTimeout = props.getInt("ubiquitos.websocket.timeout");
+		}
 		setup(server, port);
-		channel = new WebSocketChannelManager(listener);
-		WebSocketEndpoint.setChannel(channel);
 	}
 
 	private void setup(String server, int port) throws Exception {
@@ -46,6 +54,7 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 		uri = URI.create(url);
 
 		container = ContainerProvider.getWebSocketContainer();
+		container.setDefaultMaxSessionIdleTimeout(idleTimeout);
 	}
 
 	public void start() throws Exception {
@@ -61,13 +70,15 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 			}
 		}
 		
-		session.setMaxIdleTimeout(DEFAULT_IDLE_TIMEOUT);
+		session.setMaxIdleTimeout(idleTimeout);
 		
 		LOGGER.finest(String.format("This device is %s", channel.getAvailableNetworkDevice().getNetworkDeviceName()));
 		WebSocketEndpoint.setChannel(channel);
 		
-		// TODO: Must happen on every timeout/2
-		sendHi();
+		while(running){
+			sendHi();
+			Thread.sleep(idleTimeout/2);
+		}
 	}
 
 	private void sendHi() throws IOException {
@@ -78,6 +89,7 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 	}
 
 	public void stop() throws Exception {
+		running = false;
 		if (session != null){
 			session.close();
 		}

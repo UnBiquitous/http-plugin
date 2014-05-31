@@ -12,6 +12,7 @@ public class WebSocketRadar implements Radar {
 
 	private RadarListener listener;
 	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<>();
+	private Queue<WebSocketDevice> leftQueue = new ArrayDeque<>();
 
 	private boolean running = true;
 
@@ -23,6 +24,9 @@ public class WebSocketRadar implements Radar {
 		while(running){
 			while(!enteredQueue.isEmpty()){
 				listener.deviceEntered(enteredQueue.poll());
+			}
+			while(!leftQueue.isEmpty()){
+				listener.deviceLeft(leftQueue.poll());
 			}
 			Thread.yield();
 		}
@@ -43,6 +47,10 @@ public class WebSocketRadar implements Radar {
 
 	public void deviceEntered(WebSocketDevice device) {
 		enteredQueue.add(device);
+	}
+
+	public void deviceLeft(WebSocketDevice device) {
+		leftQueue.add(device);
 	}
 
 }

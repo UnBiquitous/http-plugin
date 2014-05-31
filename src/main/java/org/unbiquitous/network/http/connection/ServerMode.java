@@ -1,8 +1,6 @@
 package org.unbiquitous.network.http.connection;
 
-import java.util.Enumeration;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.websocket.DeploymentException;
@@ -10,7 +8,6 @@ import javax.websocket.DeploymentException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.websocket.jsr356.server.ServerContainer;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
@@ -20,22 +17,29 @@ import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListe
 
 public class ServerMode implements WebSocketConnectionManager.Mode {
 	private static final Logger LOGGER = UOSLogging.getLogger();
-	private static final int DEFAULT_IDLE_TIMEOUT = 1*60*1000;
 
 	private Server server;
 	private Integer port;
+	private int idleTimeout = 5*60*1000;
 
 	private WebSocketChannelManager channel;
 
 	public void init(InitialProperties props, ConnectionManagerListener listener) {
+		initProperties(props);
+		channel = new WebSocketChannelManager(listener);
+		WebSocketEndpoint.setChannel(channel);
+	}
+
+	private void initProperties(InitialProperties props) {
 		this.port = props.getInt("ubiquitos.websocket.port");
 		if (port == null ){
 			throw new RuntimeException("You must set properties for "
 					+ "'ubiquitos.websocket.port' "
 					+ "in order to use WebSocket server mode.");
 		}
-		channel = new WebSocketChannelManager(listener);
-		WebSocketEndpoint.setChannel(channel);
+		if (props.containsKey("ubiquitos.websocket.timeout")){
+			idleTimeout = props.getInt("ubiquitos.websocket.timeout");
+		}
 	}
 
 	public void start() throws Exception {
@@ -48,7 +52,7 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 		Server server = new Server();
 		ServerConnector connector = new ServerConnector(server);
 		connector.setPort(port);
-		connector.setIdleTimeout(DEFAULT_IDLE_TIMEOUT);
+		connector.setIdleTimeout(idleTimeout);
 		server.addConnector(connector);
 		return server;
 	}

@@ -8,10 +8,12 @@ import org.unbiquitous.uos.core.UOS;
 class ServerProcess implements WebSocketIntegrationBaseTest.UOSProcess {
 	private UOS uos;
 	private String port;
+	private String timeout;
 	boolean finishedInit = false;
 
-	public ServerProcess(String port) {
+	public ServerProcess(String port, String timeout) {
 		this.port = port;
+		this.timeout = timeout;
 	}
 	
 	@Override
@@ -23,6 +25,7 @@ class ServerProcess implements WebSocketIntegrationBaseTest.UOSProcess {
 		String radar = WebSocketRadar.class.getName();
 		properties.put("ubiquitos.radar", radar+"("+connMng+")");
 		properties.put("ubiquitos.websocket.port", port);
+		properties.put("ubiquitos.websocket.timeout", timeout);
 		
 		properties.put("ubiquitos.websocket.mode", "server");
 

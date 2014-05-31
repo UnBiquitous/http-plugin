@@ -11,12 +11,13 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 
 public abstract class WebSocketIntegrationBaseTest {
 	public static final String PORT = "8080";
+	public static final Integer TIMEOUT = 1000;
 	UOSProcess client;
 	UOSProcess server;
 
 	@Before public void setup(){
-		server = startProcess(new ServerProcess(PORT));
-		client = startProcess(new ClientProcess(PORT));
+		server = startProcess(new ServerProcess(PORT, TIMEOUT.toString()));
+		client = startProcess(new ClientProcess(PORT, TIMEOUT.toString()));
 		
 		Thread.yield();
 		while(isAlone(server.getUos()) || isAlone(client.getUos())){
