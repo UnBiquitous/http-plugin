@@ -1,4 +1,4 @@
-package org.unbiquitous;
+package org.unbiquitous.network.http.util;
 
 import java.util.List;
 
@@ -12,8 +12,8 @@ import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 public abstract class WebSocketIntegrationBaseTest {
 	public static final String PORT = "8080";
 	public static final Integer TIMEOUT = 1000;
-	UOSProcess client;
-	UOSProcess server;
+	protected UOSProcess client;
+	protected UOSProcess server;
 
 	@Before public void setup(){
 		server = startProcess(new ServerProcess(PORT, TIMEOUT.toString()));
@@ -33,7 +33,7 @@ public abstract class WebSocketIntegrationBaseTest {
 		return devices.size() < 2 || drivers.size() < 2;
 	}
 
-	interface UOSProcess extends Runnable{
+	public interface UOSProcess extends Runnable{
 		public UOS getUos();
 		public boolean isInitialized();
 	}
