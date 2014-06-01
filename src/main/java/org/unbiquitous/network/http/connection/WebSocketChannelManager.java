@@ -22,7 +22,12 @@ public class WebSocketChannelManager implements ChannelManager {
 	private WebSocketDevice device = new WebSocketDevice();
 	private ConnectionManagerListener listener;
 	
-	private Map<UUID, WebSocketConnection> connections = new HashMap<>();
+	private Map<UUID, WebSocketConnection> connections = new HashMap<UUID, WebSocketConnection>(){
+		public WebSocketConnection put(UUID key, WebSocketConnection value) {
+			System.out.println(key+" relates to "+value.getClientDevice().getNetworkDeviceName());
+			return super.put(key, value);
+		};
+	};
 	private Map<String, Session> sessions = new HashMap<>();
 	private Map<String, String> sessionToUUID = new HashMap<>();
 	private Set<UUID> myOpenedConnections = new HashSet<>();
@@ -71,6 +76,7 @@ public class WebSocketChannelManager implements ChannelManager {
 		
 		WebSocketConnection conn = connections.get(connectionId);
 		if (conn == null){
+			System.out.println("new "+connectionId+" at "+getAvailableNetworkDevice().getNetworkDeviceName());
 			Session session = sessions.get(uuid);
 			WebSocketDevice clientDevice = new WebSocketDevice(uuid);
 			conn = new WebSocketConnection(clientDevice, session, connectionId);
@@ -81,13 +87,42 @@ public class WebSocketChannelManager implements ChannelManager {
 	@Override
 	public ClientConnection openActiveConnection(String uuid) throws NetworkException, IOException {
 		Session session = sessions.get(uuid);
-		WebSocketDevice clientDevice = new WebSocketDevice(uuid);
-		WebSocketConnection conn = new WebSocketConnection(clientDevice, session);
+		
+		WebSocketConnection conn;
+		if(session == null){
+//			throw new NetworkException(String.format("No Socket available to device %s", uuid));
+			Session serverSession = sessions.values().iterator().next();
+			String serverUUID = sessionToUUID.values().iterator().next();
+			WebSocketDevice clientDevice = new WebSocketDevice(serverUUID);
+			conn = new WebSocketConnection(clientDevice, serverSession);
+			conn.relay_type = "RREQ";
+			conn.from = getAvailableNetworkDevice().getNetworkDeviceName();
+			conn.to = uuid;
+			System.out.println(conn.getConnectionId()+" relates to "+conn.getClientDevice().getNetworkDeviceName());
+		}else{
+			WebSocketDevice clientDevice = new WebSocketDevice(uuid);
+			conn = new WebSocketConnection(clientDevice, session);
+		}
 		connections.put(conn.getConnectionId(), conn);
 		myOpenedConnections.add(conn.getConnectionId());
 		return conn;
 	}
 
+//	public void relay(UUID connectionId, String from, String to, String message){
+//		if(to.equals(getAvailableNetworkDevice().getNetworkDeviceName())){
+////			its me
+//			System.out.println("Its me \\o/");
+//		}else{
+//			Session session = sessions.get(to);
+//			WebSocketDevice clientDevice = new WebSocketDevice(to);
+//			WebSocketConnection conn;
+//			conn = new WebSocketConnection(clientDevice, session);
+//			conn.relay = true;
+//			conn.from = from;
+//			conn.to = to;
+//		}
+//	}
+	
 	public void deviceEntered(String uuid){
 		WebSocketDevice device = new WebSocketDevice(uuid);
 		if(radar == null){

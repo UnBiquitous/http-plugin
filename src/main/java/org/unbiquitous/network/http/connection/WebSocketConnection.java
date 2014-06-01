@@ -27,6 +27,10 @@ public class WebSocketConnection extends ClientConnection {
 	
 	private UUID connectionId;
 
+	public String relay_type;
+	public String from;
+	public String to;
+	
 	public WebSocketConnection(NetworkDevice clientDevice, Session session) {
 		this(clientDevice, session, UUID.randomUUID());
 	}
@@ -87,7 +91,11 @@ public class WebSocketConnection extends ClientConnection {
 			super.flush();
 			String content = this.toString();
 			if (content != null){
-				content = connectionId+":"+content;
+				if (relay_type != null){
+					content = relay_type+":"+connectionId+":"+from+":"+to+":"+content;
+				}else{
+					content = connectionId+":"+content;
+				}
 				LOGGER.finest(String.format("Flushing content '%s' from Output Stream.", content));
 				session.getBasicRemote().sendText(content);
 			}

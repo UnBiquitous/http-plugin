@@ -13,10 +13,26 @@ import org.unbiquitous.uos.core.messageEngine.messages.Call;
 import org.unbiquitous.uos.core.messageEngine.messages.Response;
 
 public class ClientServerServiceCallTest extends WebSocketIntegrationBaseTest {
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test public void callASimpleService() throws Exception{
 		Gateway gateway = client.getUos().getGateway();
 		UpDevice targetDevice = server.getUos().getGateway().getCurrentDevice();
+		
+		Call listDrivers = new Call("uos.DeviceDriver", "listDrivers");
+		Response drivers = gateway.callService(targetDevice, listDrivers);
+		Map driverList = (Map) drivers.getResponseData("driverList");
+		assertThat(driverList).isNotNull().has(new Condition<Map>() {
+			public boolean matches(Map o) {
+				return o.size() > 0;
+			}
+		});
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test public void callASimpleServiceFromServer() throws Exception{
+		Gateway gateway = server.getUos().getGateway();
+		UpDevice targetDevice = client.getUos().getGateway().getCurrentDevice();
 		
 		Call listDrivers = new Call("uos.DeviceDriver", "listDrivers");
 		Response drivers = gateway.callService(targetDevice, listDrivers);

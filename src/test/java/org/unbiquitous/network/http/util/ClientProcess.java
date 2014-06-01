@@ -10,16 +10,22 @@ public class ClientProcess implements WebSocketIntegrationBaseTest.UOSProcess{
 	private String port;
 	private String timeout;
 	boolean finishedInit = false;
+	private int index;
 
 	public ClientProcess(String port, String timeout) {
+		this(port, timeout, 0);
+	}
+	
+	public ClientProcess(String port, String timeout, int index) {
 		this.port = port;
 		this.timeout = timeout;
+		this.index = index;
 	}
 	
 	@Override
 	public void run() {
 		InitialProperties properties = new InitialProperties();
-		properties.put("ubiquitos.uos.deviceName", "client");
+		properties.put("ubiquitos.uos.deviceName", "client_"+index);
 		String connMng = WebSocketConnectionManager.class.getName();
 		properties.put("ubiquitos.connectionManager",connMng);
 		String radar = WebSocketRadar.class.getName();

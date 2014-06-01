@@ -15,6 +15,11 @@ public abstract class WebSocketIntegrationBaseTest {
 	protected UOSProcess client;
 	protected UOSProcess server;
 
+	public interface UOSProcess extends Runnable{
+		public UOS getUos();
+		public boolean isInitialized();
+	}
+	
 	@Before public void setup(){
 		server = startProcess(new ServerProcess(PORT, TIMEOUT.toString()));
 		client = startProcess(new ClientProcess(PORT, TIMEOUT.toString()));
@@ -25,25 +30,18 @@ public abstract class WebSocketIntegrationBaseTest {
 		}
 	}
 
-
-	private boolean isAlone(UOS instance) {
+	protected UOSProcess startProcess(UOSProcess process) {
+		new Thread(process).start();
+		waitForInitialization(process);
+		return process;
+	}
+	
+	protected boolean isAlone(UOS instance) {
 		Gateway gateway = instance.getGateway();
 		List<UpDevice> devices = gateway.listDevices();
 		List<DriverData> drivers = gateway.listDrivers("uos.DeviceDriver");
 		return devices.size() < 2 || drivers.size() < 2;
 	}
-
-	public interface UOSProcess extends Runnable{
-		public UOS getUos();
-		public boolean isInitialized();
-	}
-	
-	private UOSProcess startProcess(UOSProcess process) {
-		new Thread(process).start();
-		waitForInitialization(process);
-		return process;
-	}
-
 
 	private void waitForInitialization(UOSProcess process) {
 		Thread.yield();
