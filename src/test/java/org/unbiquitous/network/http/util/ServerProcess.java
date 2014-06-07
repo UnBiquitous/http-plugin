@@ -30,7 +30,7 @@ public class ServerProcess implements WebSocketIntegrationBaseTest.UOSProcess {
 		properties.put("ubiquitos.websocket.mode", "server");
 
 		uos = new UOS();
-		getUos().init(properties);
+		getUos().start(properties);
 		
 		finishedInit = true;
 	}

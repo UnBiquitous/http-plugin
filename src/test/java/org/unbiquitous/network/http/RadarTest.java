@@ -18,7 +18,7 @@ public class RadarTest extends WebSocketIntegrationBaseTest{
 	}
 	
 	@Test public void whenOneDeviceLeavesItMustNotify() throws Exception{
-		client.getUos().tearDown();
+		client.getUos().stop();
 		List<UpDevice> serverDevices = server.getUos().getGateway().listDevices();
 		assertThat(serverDevices).hasSize(1);
 	}

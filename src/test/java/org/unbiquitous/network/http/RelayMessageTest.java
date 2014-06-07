@@ -5,6 +5,7 @@ import static org.fest.assertions.api.Assertions.*;
 import java.util.logging.Level;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.unbiquitous.network.http.util.ClientProcess;
 import org.unbiquitous.network.http.util.WebSocketIntegrationBaseTest;
@@ -32,6 +33,7 @@ public class RelayMessageTest extends WebSocketIntegrationBaseTest{
 		}
 	}
 	
+	@Ignore
 	@Test public void relayCallToTheDestinationDevice() throws Exception{
 		Gateway gateway_0 = client_0.getUos().getGateway();
 		UpDevice device_0 = gateway_0.getCurrentDevice();

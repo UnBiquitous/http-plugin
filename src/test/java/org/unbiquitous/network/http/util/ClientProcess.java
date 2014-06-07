@@ -37,7 +37,7 @@ public class ClientProcess implements WebSocketIntegrationBaseTest.UOSProcess{
 		properties.put("ubiquitos.websocket.server", "localhost");
 
 		uos = new UOS();
-		getUos().init(properties);
+		getUos().start(properties);
 
 		finishedInit = true;
 	}

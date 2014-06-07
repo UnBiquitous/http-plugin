@@ -33,7 +33,7 @@ public class Spike {
 		properties.put("ubiquitos.websocket.mode", "server");
 
 		UOS uos = new UOS();
-		uos.init(properties);
+		uos.start(properties);
 	}
 
 	private static void clientMode(String[] args, InitialProperties properties)
@@ -42,7 +42,7 @@ public class Spike {
 		properties.put("ubiquitos.websocket.server", args[0]);
 
 		UOS uos = new UOS();
-		uos.init(properties);
+		uos.start(properties);
 
 		System.out.println("Who to contact?");
 		String dest = System.console().readLine();
