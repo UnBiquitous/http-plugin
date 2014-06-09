@@ -11,6 +11,7 @@ import javax.websocket.WebSocketContainer;
 
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
+import org.unbiquitous.network.http.properties.WebSocketProperties;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
@@ -29,22 +30,22 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 	private boolean running = true;
 
 	public void init(InitialProperties props, ConnectionManagerListener listener) throws Exception {
-		initProperties(props);
+		initProperties(new Properties(props));
 		channel = new WebSocketChannelManager(listener);
 		WebSocketEndpoint.setChannel(channel);
 	}
 
-	private void initProperties(InitialProperties props) throws Exception {
-		Integer port = props.getInt("ubiquitos.websocket.port");
-		String server = props.getString("ubiquitos.websocket.server");
+	private void initProperties(Properties props) throws Exception {
+		Integer port = props.getPort();
+		String server = props.getServer();
 		if (port == null || server == null) {
 			throw new RuntimeException(
 					"You must set properties for "
 							+ "'ubiquitos.websocket.port' and 'ubiquitos.websocket.server' "
 							+ "in order to use WebSocket client mode.");
 		}
-		if (props.containsKey("ubiquitos.websocket.timeout")){
-			idleTimeout = props.getInt("ubiquitos.websocket.timeout");
+		if (props.getTimeout() != null){
+			idleTimeout = props.getTimeout();
 		}
 		setup(server, port);
 	}
@@ -100,5 +101,26 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 
 	public WebSocketChannelManager getChannelManager() {
 		return channel;
+	}
+	
+	@SuppressWarnings("serial")
+	public static class Properties extends WebSocketProperties{
+		
+		public Properties() {
+			this(new InitialProperties());
+		}
+		
+		public Properties(InitialProperties props) {
+			super(props);
+			put("ubiquitos.websocket.mode", "client");
+		}
+		
+		public void setServer(String server){
+			put("ubiquitos.websocket.server", server);
+		}
+		
+		public String getServer(){
+			return getString("ubiquitos.websocket.server");
+		}
 	}
 }

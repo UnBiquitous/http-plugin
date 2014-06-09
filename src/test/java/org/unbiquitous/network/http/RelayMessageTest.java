@@ -4,7 +4,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.unbiquitous.network.http.util.ClientProcess;
 import org.unbiquitous.network.http.util.WebSocketIntegrationBaseTest;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
@@ -20,8 +19,8 @@ public class RelayMessageTest extends WebSocketIntegrationBaseTest{
 	@Before
 	public void setupmoreclients() {
 		client_0 = client;
-		client_1 = startProcess(new ClientProcess(PORT, TIMEOUT.toString(),1));
-		client_2 = startProcess(new ClientProcess(PORT, TIMEOUT.toString(),2));
+		client_1 = startClient(1);
+		client_2 = startClient(2);
 		
 		Thread.yield();
 		while(isAlone(client_1.getUos()) || isAlone(client_2.getUos())){

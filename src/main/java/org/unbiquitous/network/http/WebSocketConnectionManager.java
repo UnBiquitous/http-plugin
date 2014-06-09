@@ -81,7 +81,9 @@ public class WebSocketConnectionManager implements ConnectionManager {
 
 	public void tearDown() {
 		try {
-			mode.stop();
+			if (mode != null){
+				mode.stop();
+			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

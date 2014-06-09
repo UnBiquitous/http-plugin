@@ -11,6 +11,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.jsr356.server.ServerContainer;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
+import org.unbiquitous.network.http.properties.WebSocketProperties;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
@@ -25,20 +26,20 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 	private WebSocketChannelManager channel;
 
 	public void init(InitialProperties props, ConnectionManagerListener listener) {
-		initProperties(props);
+		initProperties(new Properties(props));
 		channel = new WebSocketChannelManager(listener);
 		WebSocketEndpoint.setChannel(channel);
 	}
 
-	private void initProperties(InitialProperties props) {
-		this.port = props.getInt("ubiquitos.websocket.port");
+	private void initProperties(Properties props) {
+		this.port = props.getPort();
 		if (port == null ){
 			throw new RuntimeException("You must set properties for "
 					+ "'ubiquitos.websocket.port' "
 					+ "in order to use WebSocket server mode.");
 		}
-		if (props.containsKey("ubiquitos.websocket.timeout")){
-			idleTimeout = props.getInt("ubiquitos.websocket.timeout");
+		if (props.getTimeout() != null){
+			idleTimeout = props.getTimeout();
 		}
 	}
 
@@ -83,10 +84,24 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 	}
 	
 	public void stop() throws Exception {
-		server.stop();
+		if (server != null){
+			server.stop();
+			server.destroy();
+		}
 	}
 
 	public WebSocketChannelManager getChannelManager() {
 		return channel;
+	}
+	
+	@SuppressWarnings("serial")
+	public static class Properties extends WebSocketProperties{
+		public Properties() {
+			this(new InitialProperties());
+		}
+		public Properties(InitialProperties props) {
+			super(props);
+			put("ubiquitos.websocket.mode", "server");
+		}
 	}
 }
