@@ -1,4 +1,4 @@
-package org.unbiquitous.network.http.connection;
+	package org.unbiquitous.network.http.connection;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -23,30 +23,25 @@ public abstract class WebSocketConnection extends ClientConnection {
 	protected Session session;
 	protected WebSocketChannelManager channel;
 	protected UUID connectionId;
+	protected boolean isOpened = true;
 	
-	public WebSocketConnection(NetworkDevice clientDevice, Session session, WebSocketChannelManager channel) {
+	public WebSocketConnection(NetworkDevice clientDevice, Session session,
+			WebSocketChannelManager channel) {
 		this(clientDevice, session, UUID.randomUUID(), channel);
 	}
-	public WebSocketConnection(NetworkDevice clientDevice, Session session, UUID connectionId, WebSocketChannelManager channel) {
+
+	public WebSocketConnection(NetworkDevice clientDevice, Session session,
+			UUID connectionId, WebSocketChannelManager channel) {
 		super(clientDevice);
 		this.session = session;
 		this.connectionId = connectionId;
 		this.channel = channel;
 	}
-	
-	
+
 	public abstract void received(String content);
-	
-	public void send(String content){
-		try {
-			session.getBasicRemote().sendText(content);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
+
 	public boolean isConnected() {
-		return session.isOpen();
+		return session.isOpen() && isOpened;
 	}
 
 	public UUID getConnectionId() {
@@ -54,9 +49,9 @@ public abstract class WebSocketConnection extends ClientConnection {
 	}
 }
 
-abstract class HiHelloConnection extends WebSocketConnection{
+abstract class HiHelloConnection extends WebSocketConnection {
 	private static final Logger LOGGER = UOSLogging.getLogger();
-	
+
 	public HiHelloConnection(NetworkDevice clientDevice, Session session,
 			WebSocketChannelManager channel) {
 		super(clientDevice, session, channel);
@@ -64,7 +59,7 @@ abstract class HiHelloConnection extends WebSocketConnection{
 
 	protected String getUUID(String content) {
 		int first_point = content.indexOf(":");
-		String uuid = content.substring(first_point+1);
+		String uuid = content.substring(first_point + 1);
 		return uuid;
 	}
 
@@ -75,18 +70,26 @@ abstract class HiHelloConnection extends WebSocketConnection{
 		LOGGER.finer(String.format("Just met with %s at %s", uuid, remoteName));
 		channel.addConnection(uuid, session);
 	}
-	
-	public DataInputStream getDataInputStream(){	return null;	}
-	public DataOutputStream getDataOutputStream(){	return null;	}
-	public void closeConnection(){}
+
+	public DataInputStream getDataInputStream() {
+		return null;
+	}
+
+	public DataOutputStream getDataOutputStream() {
+		return null;
+	}
+
+	public void closeConnection() {
+		isOpened = false;
+	}
 }
 
-class HiConnection extends HiHelloConnection{
+class HiConnection extends HiHelloConnection {
 	public HiConnection(NetworkDevice clientDevice, Session session,
 			WebSocketChannelManager channel) {
 		super(clientDevice, session, channel);
 	}
-	
+
 	@Override
 	public void received(String content) {
 		try {
@@ -105,12 +108,12 @@ class HiConnection extends HiHelloConnection{
 	}
 }
 
-class HelloConnection extends HiHelloConnection{
+class HelloConnection extends HiHelloConnection {
 	public HelloConnection(NetworkDevice clientDevice, Session session,
 			WebSocketChannelManager channel) {
 		super(clientDevice, session, channel);
 	}
-	
+
 	@Override
 	public void received(String content) {
 		String uuid = getUUID(content);
@@ -121,14 +124,15 @@ class HelloConnection extends HiHelloConnection{
 	}
 }
 
-class ClientServerConnection extends WebSocketConnection{
-	private static final Logger LOGGER = UOSLogging.getLogger(); 
+class ClientServerConnection extends WebSocketConnection {
+	private static final Logger LOGGER = UOSLogging.getLogger();
 
 	protected OutputStream out;
 	protected InputStream in;
 	protected PipedOutputStream inWriter;
-	
-	public ClientServerConnection(NetworkDevice clientDevice, Session session, UUID connectionId, WebSocketChannelManager channel) {
+
+	public ClientServerConnection(NetworkDevice clientDevice, Session session,
+			UUID connectionId, WebSocketChannelManager channel) {
 		super(clientDevice, session, connectionId, channel);
 		initStreams(session);
 	}
@@ -137,20 +141,15 @@ class ClientServerConnection extends WebSocketConnection{
 		try {
 			inWriter = new PipedOutputStream();
 			in = new PipedInputStream(inWriter);
-			out = new ByteArrayOutputSessionStream(session);
+			out = new ByteArrayOutputSessionStream(this);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	@Override
 	public void received(String content) {
-		int first_point = content.indexOf(":");
-		int second_point = content.indexOf(":",first_point+1);
-		String uuid = content.substring(first_point+1, second_point);
-		String message = content.substring(second_point+1);
-		System.out.println(message);
-		this.connectionId  = UUID.fromString(uuid);
+		String message = clearContent(content);
 		try {
 			DataInputStream in = getDataInputStream();
 			clearTrailingContent(in);
@@ -161,46 +160,180 @@ class ClientServerConnection extends WebSocketConnection{
 			throw new RuntimeException(e);
 		}
 	}
-	
-	private void clearTrailingContent(DataInputStream in){
+
+	protected String clearContent(String content) {
+		int first_point = content.indexOf(":");
+		int second_point = content.indexOf(":", first_point + 1);
+		String uuid = content.substring(first_point + 1, second_point);
+		String message = content.substring(second_point + 1);
+		this.connectionId = UUID.fromString(uuid);
+		return message;
+	}
+
+	protected void clearTrailingContent(DataInputStream in) {
 		try {
 			in.skipBytes(in.available());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public DataInputStream getDataInputStream(){
+
+	public DataInputStream getDataInputStream() {
 		return new DataInputStream(in);
 	}
 
-	public DataOutputStream getDataOutputStream(){
+	public DataOutputStream getDataOutputStream() {
 		return new DataOutputStream(out);
 	}
 
 	public void closeConnection() throws IOException {
 		initStreams(session);
+		isOpened = false;
+	}
+
+	protected void send(String content) throws IOException {
+		if (content != null) {
+			content = "MSG:" + connectionId + ":" + content;
+			LOGGER.finest(String.format(
+					"Flushing content '%s' from Output Stream.", content));
+			session.getBasicRemote().sendText(content);
+		}
 	}
 
 	private final class ByteArrayOutputSessionStream extends
 			ByteArrayOutputStream {
-		private Session session;
-		
-		public ByteArrayOutputSessionStream(Session session) {
+		private ClientServerConnection conn;
+
+		public ByteArrayOutputSessionStream(ClientServerConnection conn) {
 			super();
-			this.session = session;
+			this.conn = conn;
 		}
 
 		@Override
 		public void flush() throws IOException {
 			super.flush();
-			String content = this.toString();
-			if (content != null){
-				content = "MSG:"+connectionId+":"+content;
-				LOGGER.finest(String.format("Flushing content '%s' from Output Stream.", content));
-				session.getBasicRemote().sendText(content);
+			if (this.size() > 0){
+				conn.send(this.toString());
 			}
 			this.reset();
 		}
+	}
+}
+
+class OutGoingRelayConnection extends ClientServerConnection {
+	private static final Logger LOGGER = UOSLogging.getLogger();
+	private NetworkDevice originDevice;
+
+	public OutGoingRelayConnection(NetworkDevice originDevice,
+			NetworkDevice targetDevice, Session session,
+			WebSocketChannelManager channel) {
+		super(targetDevice, session, UUID.randomUUID(), channel);
+		this.originDevice = originDevice;
+	}
+
+	protected void send(String content) throws IOException {
+		if (content != null) {
+			String fromAddress = originDevice.getNetworkDeviceName();
+			String toAddress = clientDevice.getNetworkDeviceName();
+			content = String.format("RELAY:%s:%s:%s:%s", connectionId,
+					fromAddress, toAddress, content);
+			LOGGER.finest(String.format(
+					"Flushing content '%s' from Output Stream.", content));
+			session.getBasicRemote().sendText(content);
+		}
+	}
+	
+	@Override
+	public void received(String content) {
+		String message = clearContent(content);
+		try {
+			DataInputStream in = getDataInputStream();
+			clearTrailingContent(in);
+			inWriter.write(message.getBytes());
+			inWriter.flush();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	protected String clearContent(String content) {
+		return content;
+	}
+	
+	@Override
+	public void closeConnection() throws IOException {
+		in.close();
+		out.close();
+		isOpened = false;
+	}
+}
+
+class IncommingRelayConnection extends ClientServerConnection {
+	private static final Logger LOGGER = UOSLogging.getLogger();
+	private NetworkDevice originDevice;
+
+	public IncommingRelayConnection(NetworkDevice originDevice,
+			NetworkDevice targetDevice, Session session,
+			WebSocketChannelManager channel,
+			String connectionID) {
+		super(targetDevice, session, UUID.fromString(connectionID), channel);
+		this.originDevice = originDevice;
+	}
+
+	protected void send(String content) throws IOException {
+		if (content != null) {
+			String fromAddress = originDevice.getNetworkDeviceName();
+			String toAddress = clientDevice.getNetworkDeviceName();
+			content = String.format("RELAY:%s:%s:%s:%s", connectionId,
+					fromAddress, toAddress, content);
+			LOGGER.finest(String.format(
+					"Flushing content (Relay) '%s' from Output Stream.", content));
+			session.getBasicRemote().sendText(content);
+		}
+	}
+	
+	protected String clearContent(String content) {
+		return content;
+	}
+}
+
+class MiddleManRelayConnection extends ClientServerConnection {
+	private static final Logger LOGGER = UOSLogging.getLogger();
+	private NetworkDevice originDevice;
+	private Session originSession;
+
+	public MiddleManRelayConnection(NetworkDevice originDevice,
+			NetworkDevice targetDevice, Session originSession,
+			Session targetSession,
+			WebSocketChannelManager channel,
+			String connectionID) {
+		super(targetDevice, targetSession, UUID.fromString(connectionID), channel);
+		this.originDevice = originDevice;
+		this.originSession = originSession;
+	}
+
+	protected void send(String content) throws IOException {
+		if (content != null) {
+			String fromAddress = originDevice.getNetworkDeviceName();
+			String toAddress = clientDevice.getNetworkDeviceName();
+			content = String.format("RELAY:%s:%s:%s:%s", connectionId,
+					fromAddress, toAddress, content);
+			LOGGER.finest(String.format(
+					"Flushing content '%s' from Output Stream.", content));
+			session.getBasicRemote().sendText(content);
+		}
+	}
+
+	@Override
+	public void received(String content) {
+		try {
+			session.getBasicRemote().sendText(content);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public void toOrigin() {
+		session=originSession;
 	}
 }

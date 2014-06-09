@@ -1,12 +1,10 @@
 package org.unbiquitous.network.http.util;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.junit.After;
 import org.junit.Before;
 import org.unbiquitous.uos.core.UOS;
-import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.driverManager.DriverData;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
@@ -23,7 +21,6 @@ public abstract class WebSocketIntegrationBaseTest {
 	}
 	
 	@Before public void setup(){
-		UOSLogging.setLevel(Level.FINEST);
 		server = startProcess(new ServerProcess(PORT, TIMEOUT.toString()));
 		client = startProcess(new ClientProcess(PORT, TIMEOUT.toString()));
 		

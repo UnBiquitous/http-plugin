@@ -1,7 +1,6 @@
 package org.unbiquitous.network.http.connection;
 
 import java.net.InetSocketAddress;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,20 +49,7 @@ public class WebSocketEndpoint {
 	public void onWebSocketText(String message, Session session) {
 		try {
 			LOGGER.finest(String.format("Handling '%s'", message));
-			int first_point = message.indexOf(":");
-			String type = message.substring(0, first_point);
-			WebSocketConnection conn = null;
-			if (type.equalsIgnoreCase("Hi")) {
-				conn = new HiConnection(null, session, channel);
-			} else if (type.equalsIgnoreCase("Hello")) {
-				conn = new HelloConnection(null, session, channel);
-			} else if (type.equalsIgnoreCase("MSG")){
-				int second_point = message.indexOf(":",first_point+1);
-				String uuid = message.substring(first_point+1, second_point);
-				UUID connectionId = UUID.fromString(uuid);
-				conn = channel.getConnection(session.getId(), connectionId);
-			}
-			conn.received(message);
+			channel.getConnection(message, session);
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, "", e);
 		}

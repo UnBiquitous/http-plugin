@@ -1,15 +1,11 @@
 package org.unbiquitous.network.http;
 
-import static org.fest.assertions.api.Assertions.*;
-
-import java.util.logging.Level;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.unbiquitous.network.http.util.ClientProcess;
 import org.unbiquitous.network.http.util.WebSocketIntegrationBaseTest;
-import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;
@@ -33,16 +29,13 @@ public class RelayMessageTest extends WebSocketIntegrationBaseTest{
 		}
 	}
 	
-	@Ignore
 	@Test public void relayCallToTheDestinationDevice() throws Exception{
 		Gateway gateway_0 = client_0.getUos().getGateway();
 		UpDevice device_0 = gateway_0.getCurrentDevice();
 		
 		Gateway gateway_1 = client_1.getUos().getGateway();
 		Call listDrivers = new Call("uos.DeviceDriver", "listDrivers");
-		UOSLogging.setLevel(Level.FINEST);
 		Response drivers = gateway_1.callService(device_0, listDrivers);
-		UOSLogging.setLevel(Level.OFF);
 		assertThat(drivers).isNotNull();
 		assertThat(drivers.getError()).isNull();
 	}

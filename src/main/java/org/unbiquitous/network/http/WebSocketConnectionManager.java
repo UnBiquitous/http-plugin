@@ -13,8 +13,8 @@ import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
+import org.unbiquitous.uos.core.network.exceptions.NetworkException;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
-import org.unbiquitous.uos.core.network.radar.RadarListener;
 
 public class WebSocketConnectionManager implements ConnectionManager {
 
@@ -48,7 +48,7 @@ public class WebSocketConnectionManager implements ConnectionManager {
 			mode.init(properties, listener);
 			channel = mode.getChannelManager();
 		} catch (Exception e) {
-			LOGGER.severe(e.getMessage());
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -65,7 +65,7 @@ public class WebSocketConnectionManager implements ConnectionManager {
 	private Mode getMode() {
 		String modeString = properties.getString("ubiquitos.websocket.mode");
 		if(modeString == null || !availableModes.containsKey(modeString.toUpperCase())){
-			throw new RuntimeException("To use WebSocketPlugin you mus select a "
+			throw new NetworkException("To use WebSocketPlugin you mus select a "
 					+ "'ubiquitos.websocket.mode' of SERVER or CLIENT");
 		}
 		return availableModes.get(modeString.toUpperCase());
