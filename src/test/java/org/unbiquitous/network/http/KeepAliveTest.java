@@ -3,7 +3,6 @@ package org.unbiquitous.network.http;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.unbiquitous.network.http.util.WebSocketIntegrationBaseTest;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;

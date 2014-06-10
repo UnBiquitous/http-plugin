@@ -7,7 +7,6 @@ import java.util.logging.Level;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.unbiquitous.network.http.util.WebSocketIntegrationBaseTest;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 

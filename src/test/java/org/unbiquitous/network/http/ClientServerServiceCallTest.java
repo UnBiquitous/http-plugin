@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.fest.assertions.core.Condition;
 import org.junit.Test;
-import org.unbiquitous.network.http.util.WebSocketIntegrationBaseTest;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 import org.unbiquitous.uos.core.messageEngine.dataType.UpDevice;
 import org.unbiquitous.uos.core.messageEngine.messages.Call;

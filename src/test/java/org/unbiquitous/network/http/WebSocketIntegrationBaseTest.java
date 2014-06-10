@@ -1,4 +1,4 @@
-package org.unbiquitous.network.http.util;
+package org.unbiquitous.network.http;
 
 import java.util.Date;
 import java.util.List;
