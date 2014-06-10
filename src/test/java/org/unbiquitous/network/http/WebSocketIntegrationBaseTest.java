@@ -52,7 +52,7 @@ public abstract class WebSocketIntegrationBaseTest {
 		
 		waitFor(new Condition() {
 			public boolean matches(Object arg0) {
-				return isAlone(server.getUos()) || isAlone(client.getUos());
+				return !isAlone(server.getUos()) && !isAlone(client.getUos());
 			}
 		}, 2000);
 	}
@@ -81,10 +81,10 @@ public abstract class WebSocketIntegrationBaseTest {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void waitFor(Condition condition, long timeInMillis){
+	protected void waitFor(Condition condition, long timeInMillis){
 		Thread.yield();
 		Date start = new Date();
-		while(condition.matches(null)){
+		while(!condition.matches(null)){
 			Thread.yield();
 			Date now = new Date();
 			if (now.getTime() - start.getTime() > timeInMillis){
@@ -104,7 +104,7 @@ public abstract class WebSocketIntegrationBaseTest {
 	private void waitForInitialization(final UOSProcess process) {
 		waitFor(new Condition() {
 			public boolean matches(Object arg0) {
-				return !process.isInitialized();
+				return process.isInitialized();
 			}
 		}, 1000);
 	}

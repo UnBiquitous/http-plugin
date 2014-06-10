@@ -23,17 +23,22 @@ public class WebSocketChannelManager implements ChannelManager {
 	private ConnectionManagerListener listener;
 
 	private Map<UUID, WebSocketConnection> connections = new HashMap<>();
-	private Map<String, Session> sessions = new HashMap<>();
-	private Map<String, String> sessionToUUID = new HashMap<>();
+	private Map<String, Session> deviceUUIDToSession = new HashMap<>();
+	private Map<String, String> sessionToDeviceUUID = new HashMap<>();
 	private Set<UUID> myOpenedConnections = new HashSet<>();
 
 	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<>();
 	private WebSocketRadar radar;
+	private boolean relayMode = false;
 
 	public WebSocketChannelManager(ConnectionManagerListener listener) {
 		this.listener = listener;
 	}
 
+	public void setRelayMode(boolean relayMode) {
+		this.relayMode = relayMode;
+	}
+	
 	public ClientConnection openPassiveConnection(String networkDeviceName)
 			throws NetworkException, IOException {
 		throw new RuntimeException(
@@ -48,8 +53,8 @@ public class WebSocketChannelManager implements ChannelManager {
 	}
 
 	public void addConnection(String uuid, Session session) {
-		sessions.put(uuid, session);
-		sessionToUUID.put(session.getId(), uuid);
+		deviceUUIDToSession.put(uuid, session);
+		sessionToDeviceUUID.put(session.getId(), uuid);
 	}
 
 	public void notifyListener(WebSocketConnection conn) {
@@ -64,19 +69,39 @@ public class WebSocketChannelManager implements ChannelManager {
 	}
 
 	public boolean knows(String uuid) {
-		return sessions.containsKey(uuid);
+		return deviceUUIDToSession.containsKey(uuid);
 	}
 
-	public void getConnection(String message, Session session) {
+	public void handleIncommingMessage(String message, Session session) {
 		int first_point = message.indexOf(":");
 		String type = message.substring(0, first_point);
 		WebSocketConnection conn = null;
 		if (type.equalsIgnoreCase("Hi")) {
 			conn = new HiConnection(null, session, this);
+			String uuid = ((HiConnection)conn).getUUID(message);
+			boolean isNotKnown = !knows(uuid);
 			conn.received(message);
+			if (relayMode && isNotKnown){
+				for(String deviceUUID : deviceUUIDToSession.keySet()){
+					if(!deviceUUID.equals(uuid)){
+						try {
+							Session c = deviceUUIDToSession.get(deviceUUID);
+							c.getBasicRemote().sendText("MEET:"+uuid);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}
+			}
 		} else if (type.equalsIgnoreCase("Hello")) {
 			conn = new HelloConnection(null, session, this);
 			conn.received(message);
+		} else if (type.equalsIgnoreCase("MEET")) {
+			String uuid = message.substring(first_point+1);
+			deviceEntered(uuid);
+		} else if (type.equalsIgnoreCase("FORGET")) {
+			String uuid = message.substring(first_point+1);
+			radar.deviceLeft(new WebSocketDevice(uuid));
 		} else if (type.equalsIgnoreCase("MSG")) {
 			int second_point = message.indexOf(":", first_point + 1);
 			String uuid = message.substring(first_point + 1, second_point);
@@ -115,23 +140,25 @@ public class WebSocketChannelManager implements ChannelManager {
 				((MiddleManRelayConnection)conn).toOrigin();
 				conn.received(message);
 			}else{
-				Session originSession = sessions.get(fromAddress);
-				Session targetSession = sessions.get(toAddress);
+				Session originSession = deviceUUIDToSession.get(fromAddress);
+				Session targetSession = deviceUUIDToSession.get(toAddress);
 				conn = new MiddleManRelayConnection(originDevice, targetDevice,
 						originSession, targetSession, this, connectionID);
 				connections.put(conn.getConnectionId(), conn);
 				conn.received(message);
 			}
+		}else{
+			System.out.println(message);
 		}
 	}
 
 	private WebSocketConnection getConnection(String sessionId,
 			UUID connectionId) {
-		String uuid = sessionToUUID.get(sessionId);
+		String uuid = sessionToDeviceUUID.get(sessionId);
 
 		WebSocketConnection conn = connections.get(connectionId);
 		if (conn == null) {
-			Session session = sessions.get(uuid);
+			Session session = deviceUUIDToSession.get(uuid);
 			WebSocketDevice clientDevice = new WebSocketDevice(uuid);
 			conn = new ClientServerConnection(clientDevice, session,
 					connectionId, this);
@@ -142,14 +169,14 @@ public class WebSocketChannelManager implements ChannelManager {
 	@Override
 	public ClientConnection openActiveConnection(String uuid)
 			throws NetworkException, IOException {
-		Session session = sessions.get(uuid);
+		Session session = deviceUUIDToSession.get(uuid);
 
 		WebSocketConnection conn;
 		if (session == null) {
 			// throw new
 			// NetworkException(String.format("No Socket available to device %s",
 			// uuid));
-			Session serverSession = sessions.values().iterator().next();
+			Session serverSession = deviceUUIDToSession.values().iterator().next();
 			WebSocketDevice targetDevice = new WebSocketDevice(uuid);
 			conn = new OutGoingRelayConnection(getAvailableNetworkDevice(),
 					targetDevice, serverSession, this);
@@ -173,8 +200,20 @@ public class WebSocketChannelManager implements ChannelManager {
 	}
 
 	public void deviceLeft(Session session) {
-		String uuid = sessionToUUID.get(session.getId());
+		String uuid = sessionToDeviceUUID.get(session.getId());
 		radar.deviceLeft(new WebSocketDevice(uuid));
+		if (relayMode){
+			for(String deviceUUID : deviceUUIDToSession.keySet()){
+				if(!deviceUUID.equals(uuid)){
+					try {
+						Session c = deviceUUIDToSession.get(deviceUUID);
+						c.getBasicRemote().sendText("FORGET:"+uuid);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
+		}
 	}
 
 	public void setRadar(WebSocketRadar radar) {

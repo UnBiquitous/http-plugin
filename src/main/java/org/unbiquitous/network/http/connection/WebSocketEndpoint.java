@@ -49,7 +49,7 @@ public class WebSocketEndpoint {
 	public void onWebSocketText(String message, Session session) {
 		try {
 			LOGGER.finest(String.format("Handling '%s'", message));
-			channel.getConnection(message, session);
+			channel.handleIncommingMessage(message, session);
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, "", e);
 		}
