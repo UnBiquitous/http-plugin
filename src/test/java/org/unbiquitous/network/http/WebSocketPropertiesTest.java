@@ -8,7 +8,7 @@ import org.unbiquitous.network.http.connection.ClientMode;
 import org.unbiquitous.network.http.connection.ServerMode;
 import org.unbiquitous.uos.core.InitialProperties;
 
-public class TestWebSocketProperties {
+public class WebSocketPropertiesTest {
 
 	WebSocketConnectionManager mng;
 	
