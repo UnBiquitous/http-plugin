@@ -36,13 +36,16 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 	}
 
 	private void initProperties(Properties props) throws Exception {
-		Integer port = props.getPort();
 		String server = props.getServer();
-		if (port == null || server == null) {
+		if (server == null) {
 			throw new RuntimeException(
-					"You must set properties for "
-							+ "'ubiquitos.websocket.port' and 'ubiquitos.websocket.server' "
+							  "You must set property for "
+							+ "'ubiquitos.websocket.server' "
 							+ "in order to use WebSocket client mode.");
+		}
+		Integer port = 8080;
+		if (props.getPort() != null ){
+			port = props.getPort();
 		}
 		if (props.getTimeout() != null){
 			idleTimeout = props.getTimeout();

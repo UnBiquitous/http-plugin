@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 import javax.websocket.Session;
 
 import org.unbiquitous.network.http.WebSocketRadar;
-import org.unbiquitous.uos.core.UOS;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;

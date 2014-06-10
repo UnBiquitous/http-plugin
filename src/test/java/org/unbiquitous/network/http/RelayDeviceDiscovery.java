@@ -65,7 +65,7 @@ public class RelayDeviceDiscovery extends WebSocketIntegrationBaseTest {
 				Gateway gateway = uos.getGateway();
 				return gateway.listDevices().size() == quantity;
 			}
-		}, 2000);
+		}, 4000);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -90,7 +90,7 @@ public class RelayDeviceDiscovery extends WebSocketIntegrationBaseTest {
 				Gateway gateway = uos.getGateway();
 				return gateway.listDevices().size() == quantity;
 			}
-		}, 2000);
+		}, 4000);
 		
 		client_0.getUos().stop();
 		Thread.yield();

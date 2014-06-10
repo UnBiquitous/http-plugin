@@ -16,8 +16,9 @@ public class WebSocketPropertiesTest {
 		mng = new WebSocketConnectionManager();
 	}
 	
-	@After public void teardown(){
+	@After public void teardown() throws Exception{
 		mng.tearDown();
+		Thread.yield();
 	}
 	
 	@Test(expected=RuntimeException.class) 
@@ -32,8 +33,8 @@ public class WebSocketPropertiesTest {
 		mng.init(prop);
 	}
 
-	@Test(expected=RuntimeException.class) 
-	public void rejectServerModeWithoutAPort(){
+	@Ignore
+	@Test public void acceptsServerModeWithoutAPortUsingTheDefaultOne(){
 		InitialProperties prop = new InitialProperties();
 		prop.put("ubiquitos.websocket.mode", "server");
 		mng.init(prop);
@@ -48,8 +49,7 @@ public class WebSocketPropertiesTest {
 	}
 	
 	@Ignore
-	@Test 
-	public void acceptsAValidServerModeProperty() throws InterruptedException{
+	@Test public void acceptsAValidServerModeProperty() throws InterruptedException{
 		InitialProperties prop = new InitialProperties();
 		prop.put("ubiquitos.websocket.mode", "server");
 		prop.put("ubiquitos.websocket.port", "12345");
@@ -57,17 +57,17 @@ public class WebSocketPropertiesTest {
 	}
 	
 	@Ignore
-	@Test 
-	public void acceptsAServerModeProperty() throws InterruptedException{
+	@Test public void acceptsAServerModeProperty() throws InterruptedException{
 		ServerMode.Properties prop = new ServerMode.Properties();
 		prop.setPort(12345);
 		mng.init(prop);
 	}
 	
-	@Test(expected=RuntimeException.class) 
-	public void rejectClientModeWithoutAPort(){
+	@Ignore
+	@Test public void acceptsClientModeWithoutAPortUsingTheDefaultOne(){
 		InitialProperties prop = new InitialProperties();
 		prop.put("ubiquitos.websocket.mode", "client");
+		prop.put("ubiquitos.websocket.server", "www.theguy.com");
 		mng.init(prop);
 	}
 	
@@ -88,8 +88,7 @@ public class WebSocketPropertiesTest {
 	}
 	
 	@Ignore
-	@Test
-	public void acceptsAValidClientProperty() throws InterruptedException{
+	@Test public void acceptsAValidClientProperty() throws InterruptedException{
 		InitialProperties prop = new InitialProperties();
 		prop.put("ubiquitos.websocket.mode", "client");
 		prop.put("ubiquitos.websocket.port", "12345");
@@ -98,8 +97,7 @@ public class WebSocketPropertiesTest {
 	}
 	
 	@Ignore
-	@Test 
-	public void acceptsAClientModeProperty() throws InterruptedException{
+	@Test public void acceptsAClientModeProperty() throws InterruptedException{
 		ClientMode.Properties prop = new ClientMode.Properties();
 		prop.setPort(123456);
 		prop.setServer("www.theguy.com");

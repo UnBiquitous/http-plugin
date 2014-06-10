@@ -22,7 +22,7 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 	private static final Logger LOGGER = UOSLogging.getLogger();
 
 	private Server server;
-	private Integer port;
+	private Integer port = 8080;
 	private int idleTimeout = FIVE_MINUTES;
 	private boolean relayDevices = false;
 
@@ -37,11 +37,8 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 	}
 
 	private void initProperties(Properties props) {
-		this.port = props.getPort();
-		if (port == null ){
-			throw new RuntimeException("You must set properties for "
-					+ "'ubiquitos.websocket.port' "
-					+ "in order to use WebSocket server mode.");
+		if (props.getPort() != null ){
+			port = props.getPort();
 		}
 		if (props.getTimeout() != null){
 			idleTimeout = props.getTimeout();
