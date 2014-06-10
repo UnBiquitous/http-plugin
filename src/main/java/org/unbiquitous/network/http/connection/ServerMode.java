@@ -11,35 +11,42 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.jsr356.server.ServerContainer;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
+import org.unbiquitous.network.http.properties.WebSocketProperties;
 import org.unbiquitous.uos.core.InitialProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
 
 public class ServerMode implements WebSocketConnectionManager.Mode {
+	private static final int FIVE_MINUTES = 5*60*1000;
+
 	private static final Logger LOGGER = UOSLogging.getLogger();
 
 	private Server server;
-	private Integer port;
-	private int idleTimeout = 5*60*1000;
+	private Integer port = 8080;
+	private int idleTimeout = FIVE_MINUTES;
+	private boolean relayDevices = false;
 
 	private WebSocketChannelManager channel;
 
 	public void init(InitialProperties props, ConnectionManagerListener listener) {
-		initProperties(props);
+		initProperties(new Properties(props));
 		channel = new WebSocketChannelManager(listener);
+		channel.setRelayMode(relayDevices);
 		WebSocketEndpoint.setChannel(channel);
+		
 	}
 
-	private void initProperties(InitialProperties props) {
-		this.port = props.getInt("ubiquitos.websocket.port");
-		if (port == null ){
-			throw new RuntimeException("You must set properties for "
-					+ "'ubiquitos.websocket.port' "
-					+ "in order to use WebSocket server mode.");
+	private void initProperties(Properties props) {
+		if (props.getPort() != null ){
+			port = props.getPort();
 		}
-		if (props.containsKey("ubiquitos.websocket.timeout")){
-			idleTimeout = props.getInt("ubiquitos.websocket.timeout");
+		if (props.getTimeout() != null){
+			idleTimeout = props.getTimeout();
 		}
+		if (props.getRelayDevices() != null){
+			relayDevices = props.getRelayDevices();
+		}
+		
 	}
 
 	public void start() throws Exception {
@@ -83,10 +90,32 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 	}
 	
 	public void stop() throws Exception {
-		server.stop();
+		if (server != null){
+			server.stop();
+			server.destroy();
+		}
 	}
 
 	public WebSocketChannelManager getChannelManager() {
 		return channel;
+	}
+	
+	@SuppressWarnings("serial")
+	public static class Properties extends WebSocketProperties{
+		public Properties() {
+			this(new InitialProperties());
+		}
+		public Properties(InitialProperties props) {
+			super(props);
+			put("ubiquitos.websocket.mode", "server");
+		}
+		
+		public void setRelayDevices(Boolean b) {
+			put("ubiquitos.websocket.relayDevices", b);
+		}
+		
+		public Boolean getRelayDevices() {
+			return getBool("ubiquitos.websocket.relayDevices");
+		}
 	}
 }
