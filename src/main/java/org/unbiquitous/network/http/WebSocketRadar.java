@@ -11,8 +11,8 @@ import org.unbiquitous.uos.core.network.radar.RadarListener;
 public class WebSocketRadar implements Radar {
 
 	private RadarListener listener;
-	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<>();
-	private Queue<WebSocketDevice> leftQueue = new ArrayDeque<>();
+	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<WebSocketDevice>();
+	private Queue<WebSocketDevice> leftQueue = new ArrayDeque<WebSocketDevice>();
 
 	private boolean running = true;
 
