@@ -24,12 +24,12 @@ public class WebSocketChannelManager implements ChannelManager {
 	private WebSocketDevice device = new WebSocketDevice();
 	private ConnectionManagerListener listener;
 
-	private Map<UUID, WebSocketConnection> connections = new HashMap<>();
-	private Map<String, Session> deviceUUIDToSession = new HashMap<>();
-	private Map<String, String> sessionToDeviceUUID = new HashMap<>();
-	private Set<UUID> myOpenedConnections = new HashSet<>();
+	private Map<UUID, WebSocketConnection> connections = new HashMap<UUID, WebSocketConnection>();
+	private Map<String, Session> deviceUUIDToSession = new HashMap<String, Session>();
+	private Map<String, String> sessionToDeviceUUID = new HashMap<String, String>();
+	private Set<UUID> myOpenedConnections = new HashSet<UUID>();
 
-	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<>();
+	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<WebSocketDevice>();
 	private WebSocketRadar radar;
 	private boolean relayMode = false;
 
