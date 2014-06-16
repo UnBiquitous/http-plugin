@@ -11,8 +11,8 @@ import org.unbiquitous.uos.core.network.radar.RadarListener;
 public class WebSocketRadar implements Radar {
 
 	private RadarListener listener;
-	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<>();
-	private Queue<WebSocketDevice> leftQueue = new ArrayDeque<>();
+	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<WebSocketDevice>();
+	private Queue<WebSocketDevice> leftQueue = new ArrayDeque<WebSocketDevice>();
 
 	private boolean running = true;
 
@@ -21,11 +21,11 @@ public class WebSocketRadar implements Radar {
 	}
 
 	public void run() {
-		while(running){
-			while(!enteredQueue.isEmpty()){
+		while (running) {
+			while (!enteredQueue.isEmpty()) {
 				listener.deviceEntered(enteredQueue.poll());
 			}
-			while(!leftQueue.isEmpty()){
+			while (!leftQueue.isEmpty()) {
 				listener.deviceLeft(leftQueue.poll());
 			}
 			Thread.yield();
