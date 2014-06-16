@@ -1,14 +1,11 @@
 package org.unbiquitous.network.http;
 
-import java.util.logging.Level;
-
 import org.fest.assertions.core.Condition;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.unbiquitous.network.http.connection.ServerMode;
 import org.unbiquitous.uos.core.UOS;
-import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.adaptabitilyEngine.Gateway;
 
 public class RelayDeviceDiscovery extends WebSocketIntegrationBaseTest {
@@ -16,8 +13,7 @@ public class RelayDeviceDiscovery extends WebSocketIntegrationBaseTest {
 	private UOSProcess client_0;
 	private UOSProcess client_1;
 
-	@Before public void setup() { /*Override the default setup*/ 
-		UOSLogging.setLevel(Level.FINEST);
+	@Before public void setup() { /*Override the default setup*/
 	}
 	
 	@After public void teardown() {
@@ -34,9 +30,6 @@ public class RelayDeviceDiscovery extends WebSocketIntegrationBaseTest {
 		client_1 = startClient(1);
 
 		Thread.yield();
-		while(isAlone(client_0.getUos()) || isAlone(client_1.getUos())){
-			Thread.yield();
-		}
 		
 		waitFor(new Condition() {
 			public boolean matches(Object arg0) {

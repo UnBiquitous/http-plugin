@@ -54,7 +54,7 @@ public abstract class WebSocketIntegrationBaseTest {
 			public boolean matches(Object arg0) {
 				return !isAlone(server.getUos()) && !isAlone(client.getUos());
 			}
-		}, 2000);
+		}, 5000);
 	}
 
 	protected UOSProcess startServer() {

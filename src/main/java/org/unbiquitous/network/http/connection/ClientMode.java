@@ -1,8 +1,10 @@
 package org.unbiquitous.network.http.connection;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
 import org.unbiquitous.network.http.properties.WebSocketProperties;
 import org.unbiquitous.uos.core.InitialProperties;
@@ -50,15 +52,32 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 	}
 
 	public void start() throws Exception {
+		while (running) {
+			connect();
+			keepAlive();
+		}
+	}
+
+	private void keepAlive() throws IOException, InterruptedException {
+		try {
+			while (running) {
+				sendHi();
+				Thread.sleep(idleTimeout / 2);
+			}
+		} catch (WebsocketNotConnectedException e) {
+			LOGGER.warning("Problems sending keep alive.");
+			LOGGER.log(Level.FINE, "Problems sending keep alive.", e);
+		}
+	}
+
+	private void connect() throws InterruptedException {
 		int retries = 0;
 		while (retries < 10) {
 			try {
-//				session = container.connectToServer(WebSocketEndpoint.class,
-//						uri);
-				
 				client.connectBlocking();
+//				session.setMaxIdleTimeout(idleTimeout); //TODO: how to manage timeout ??
 				retries = 11;
-			} catch (InterruptedException e) {
+			} catch (WebsocketNotConnectedException e) {
 				LOGGER.warning("Couldn't connect to server. Retrying ...");
 				try {
 					Thread.sleep(100);
@@ -67,31 +86,19 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 				retries++;
 			}
 		}
-
-//		session.setMaxIdleTimeout(idleTimeout);
-//
-//		LOGGER.finest(String.format("This device is %s", channel
-//				.getAvailableNetworkDevice().getNetworkDeviceName()));
-//		WebSocketEndpoint.setChannel(channel);
-
-		while (running) {
-			sendHi();
-			Thread.sleep(idleTimeout / 2);
-		}
 	}
 
 	private void sendHi() throws IOException {
 		NetworkDevice device = channel.getAvailableNetworkDevice();
 		String deviceAddr = device.getNetworkDeviceName();
 		String welcomeMessage = String.format("Hi:%s", deviceAddr);
-//		session.getBasicRemote().sendText(welcomeMessage);
 		client.send(welcomeMessage);
 	}
 
 	public void stop() throws Exception {
 		running = false;
 		if (client != null) {
-			client.closeBlocking();
+			client.close();
 		}
 	}
 
