@@ -1,15 +1,7 @@
 package org.unbiquitous.network.http.connection;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.websocket.DeploymentException;
-
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.websocket.jsr356.server.ServerContainer;
-import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.unbiquitous.network.http.WebSocketConnectionManager;
 import org.unbiquitous.network.http.properties.WebSocketProperties;
 import org.unbiquitous.uos.core.InitialProperties;
@@ -21,7 +13,7 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 
 	private static final Logger LOGGER = UOSLogging.getLogger();
 
-	private Server server;
+	private WebSocketServer server;
 	private Integer port = 8080;
 	private int idleTimeout = FIVE_MINUTES;
 	private boolean relayDevices = false;
@@ -32,7 +24,7 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 		initProperties(new Properties(props));
 		channel = new WebSocketChannelManager(listener);
 		channel.setRelayMode(relayDevices);
-		WebSocketEndpoint.setChannel(channel);
+		WebSocketServer.setChannel(channel);
 		
 	}
 
@@ -50,12 +42,18 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 	}
 
 	public void start() throws Exception {
-		server = createServer(port);
-		setEventHandler(createRootServletContext(server));
-		startServer();
+//		server = createServer(port);
+//		setEventHandler(createRootServletContext(server));
+//		startServer();
+		createNewServer(port);
 	}
 
-	private Server createServer(int port) {
+	private void createNewServer(int port) throws Exception{
+		server = new WebSocketServer(port);
+		server.start();
+	}
+	
+	/*private Server createServer(int port) {
 		Server server = new Server();
 		ServerConnector connector = new ServerConnector(server);
 		connector.setPort(port);
@@ -87,12 +85,11 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 			server.dump(System.err);
 		}
 		server.join();
-	}
+	}*/
 	
 	public void stop() throws Exception {
 		if (server != null){
 			server.stop();
-			server.destroy();
 		}
 	}
 

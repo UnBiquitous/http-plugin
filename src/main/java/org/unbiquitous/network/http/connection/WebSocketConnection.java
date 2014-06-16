@@ -12,25 +12,23 @@ import java.net.InetSocketAddress;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import javax.websocket.Session;
-
-import org.eclipse.jetty.websocket.common.WebSocketSession;
+import org.java_websocket.WebSocket;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.model.connection.ClientConnection;
 
 public abstract class WebSocketConnection extends ClientConnection {
-	protected Session session;
+	protected WebSocket session;
 	protected WebSocketChannelManager channel;
 	protected UUID connectionId;
 	protected boolean isOpened = true;
 	
-	public WebSocketConnection(NetworkDevice clientDevice, Session session,
+	public WebSocketConnection(NetworkDevice clientDevice, WebSocket session,
 			WebSocketChannelManager channel) {
 		this(clientDevice, session, UUID.randomUUID(), channel);
 	}
 
-	public WebSocketConnection(NetworkDevice clientDevice, Session session,
+	public WebSocketConnection(NetworkDevice clientDevice, WebSocket session,
 			UUID connectionId, WebSocketChannelManager channel) {
 		super(clientDevice);
 		this.session = session;
@@ -52,7 +50,7 @@ public abstract class WebSocketConnection extends ClientConnection {
 abstract class HiHelloConnection extends WebSocketConnection {
 	private static final Logger LOGGER = UOSLogging.getLogger();
 
-	public HiHelloConnection(NetworkDevice clientDevice, Session session,
+	public HiHelloConnection(NetworkDevice clientDevice, WebSocket session,
 			WebSocketChannelManager channel) {
 		super(clientDevice, session, channel);
 	}
@@ -64,8 +62,7 @@ abstract class HiHelloConnection extends WebSocketConnection {
 	}
 
 	protected void addSession(String uuid) {
-		InetSocketAddress remoteAddress = ((WebSocketSession) session)
-				.getRemoteAddress();
+		InetSocketAddress remoteAddress = session.getRemoteSocketAddress();
 		String remoteName = remoteAddress.getHostName();
 		LOGGER.finer(String.format("Just met with %s at %s", uuid, remoteName));
 		channel.addConnection(uuid, session);
@@ -85,7 +82,7 @@ abstract class HiHelloConnection extends WebSocketConnection {
 }
 
 class HiConnection extends HiHelloConnection {
-	public HiConnection(NetworkDevice clientDevice, Session session,
+	public HiConnection(NetworkDevice clientDevice, WebSocket session,
 			WebSocketChannelManager channel) {
 		super(clientDevice, session, channel);
 	}
@@ -104,12 +101,12 @@ class HiConnection extends HiHelloConnection {
 		NetworkDevice currentDevice = channel.getAvailableNetworkDevice();
 		String currentDeviceUUID = currentDevice.getNetworkDeviceName();
 		String helloMessage = String.format("Hello:%s", currentDeviceUUID);
-		session.getBasicRemote().sendText(helloMessage);
+		session.send(helloMessage);
 	}
 }
 
 class HelloConnection extends HiHelloConnection {
-	public HelloConnection(NetworkDevice clientDevice, Session session,
+	public HelloConnection(NetworkDevice clientDevice, WebSocket session,
 			WebSocketChannelManager channel) {
 		super(clientDevice, session, channel);
 	}
@@ -131,13 +128,13 @@ class ClientServerConnection extends WebSocketConnection {
 	protected InputStream in;
 	protected PipedOutputStream inWriter;
 
-	public ClientServerConnection(NetworkDevice clientDevice, Session session,
+	public ClientServerConnection(NetworkDevice clientDevice, WebSocket session,
 			UUID connectionId, WebSocketChannelManager channel) {
 		super(clientDevice, session, connectionId, channel);
-		initStreams(session);
+		initStreams();
 	}
 
-	private void initStreams(Session session) {
+	private void initStreams() {
 		try {
 			inWriter = new PipedOutputStream();
 			in = new PipedInputStream(inWriter);
@@ -187,7 +184,7 @@ class ClientServerConnection extends WebSocketConnection {
 	}
 
 	public void closeConnection() throws IOException {
-		initStreams(session);
+		initStreams();
 		isOpened = false;
 	}
 
@@ -196,7 +193,7 @@ class ClientServerConnection extends WebSocketConnection {
 			content = "MSG:" + connectionId + ":" + content;
 			LOGGER.finest(String.format(
 					"Flushing content '%s' from Output Stream.", content));
-			session.getBasicRemote().sendText(content);
+			session.send(content);
 		}
 	}
 
@@ -225,7 +222,7 @@ class OutGoingRelayConnection extends ClientServerConnection {
 	private NetworkDevice originDevice;
 
 	public OutGoingRelayConnection(NetworkDevice originDevice,
-			NetworkDevice targetDevice, Session session,
+			NetworkDevice targetDevice, WebSocket session,
 			WebSocketChannelManager channel) {
 		super(targetDevice, session, UUID.randomUUID(), channel);
 		this.originDevice = originDevice;
@@ -239,7 +236,7 @@ class OutGoingRelayConnection extends ClientServerConnection {
 					fromAddress, toAddress, content);
 			LOGGER.finest(String.format(
 					"Flushing content '%s' from Output Stream.", content));
-			session.getBasicRemote().sendText(content);
+			session.send(content);
 		}
 	}
 	
@@ -273,7 +270,7 @@ class IncommingRelayConnection extends ClientServerConnection {
 	private NetworkDevice originDevice;
 
 	public IncommingRelayConnection(NetworkDevice originDevice,
-			NetworkDevice targetDevice, Session session,
+			NetworkDevice targetDevice, WebSocket session,
 			WebSocketChannelManager channel,
 			String connectionID) {
 		super(targetDevice, session, UUID.fromString(connectionID), channel);
@@ -288,7 +285,7 @@ class IncommingRelayConnection extends ClientServerConnection {
 					fromAddress, toAddress, content);
 			LOGGER.finest(String.format(
 					"Flushing content (Relay) '%s' from Output Stream.", content));
-			session.getBasicRemote().sendText(content);
+			session.send(content);
 		}
 	}
 	
@@ -300,11 +297,11 @@ class IncommingRelayConnection extends ClientServerConnection {
 class MiddleManRelayConnection extends ClientServerConnection {
 	private static final Logger LOGGER = UOSLogging.getLogger();
 	private NetworkDevice originDevice;
-	private Session originSession;
+	private WebSocket originSession;
 
 	public MiddleManRelayConnection(NetworkDevice originDevice,
-			NetworkDevice targetDevice, Session originSession,
-			Session targetSession,
+			NetworkDevice targetDevice, WebSocket originSession,
+			WebSocket targetSession,
 			WebSocketChannelManager channel,
 			String connectionID) {
 		super(targetDevice, targetSession, UUID.fromString(connectionID), channel);
@@ -320,15 +317,15 @@ class MiddleManRelayConnection extends ClientServerConnection {
 					fromAddress, toAddress, content);
 			LOGGER.finest(String.format(
 					"Flushing content '%s' from Output Stream.", content));
-			session.getBasicRemote().sendText(content);
+			session.send(content);
 		}
 	}
 
 	@Override
 	public void received(String content) {
 		try {
-			session.getBasicRemote().sendText(content);
-		} catch (IOException e) {
+			session.send(content);
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
