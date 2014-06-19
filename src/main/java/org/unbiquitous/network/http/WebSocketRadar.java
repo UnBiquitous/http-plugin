@@ -15,20 +15,36 @@ public class WebSocketRadar implements Radar {
 	private Queue<WebSocketDevice> leftQueue = new ArrayDeque<WebSocketDevice>();
 
 	private boolean running = true;
+	
+	//Cria um objeto que será o "monitor" desta Thread. 
+	//Ele possui um tipo próprio para facilitar debug se houver erro
+	private static final class Lock { }
+	private final Object lock = new Lock();
 
 	public WebSocketRadar(RadarListener listener) {
 		this.listener = listener;
 	}
-
+	
 	public void run() {
 		while (running) {
+			
 			while (!enteredQueue.isEmpty()) {
 				listener.deviceEntered(enteredQueue.poll());
 			}
+			
 			while (!leftQueue.isEmpty()) {
 				listener.deviceLeft(leftQueue.poll());
 			}
-			Thread.yield();
+			
+			synchronized (lock) 
+			{
+				try {
+					lock.wait();
+				}
+				catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -47,10 +63,16 @@ public class WebSocketRadar implements Radar {
 
 	public void deviceEntered(WebSocketDevice device) {
 		enteredQueue.add(device);
+		synchronized (lock) {
+			lock.notifyAll(); //Acorda a thread
+		}
 	}
 
 	public void deviceLeft(WebSocketDevice device) {
 		leftQueue.add(device);
+		synchronized (lock) {
+			lock.notifyAll(); //Acorda a thread
+		}
 	}
 
 }
