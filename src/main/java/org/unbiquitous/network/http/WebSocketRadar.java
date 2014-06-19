@@ -5,7 +5,6 @@ import java.util.Queue;
 
 import org.unbiquitous.network.http.connection.WebSocketDevice;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManager;
-import org.unbiquitous.uos.core.network.model.NetworkDevice;
 import org.unbiquitous.uos.core.network.radar.Radar;
 import org.unbiquitous.uos.core.network.radar.RadarListener;
 
@@ -17,8 +16,8 @@ public class WebSocketRadar implements Radar {
 
 	private boolean running = true;
 	
-	//Cria um objeto que ser· o "monitor" desta Thread. 
-	//Ele possui um tipo prÛprio para facilitar debug se houver erro
+	//Cria um objeto que ser√° o "monitor" desta Thread. 
+	//Ele possui um tipo pr√≥prio para facilitar debug se houver erro
 	private static final class Lock { }
 	private final Object lock = new Lock();
 
