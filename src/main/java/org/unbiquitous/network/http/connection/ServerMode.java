@@ -42,50 +42,15 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 	}
 
 	public void start() throws Exception {
-//		server = createServer(port);
-//		setEventHandler(createRootServletContext(server));
-//		startServer();
 		createNewServer(port);
 	}
 
 	private void createNewServer(int port) throws Exception{
 		server = new WebSocketServer(port);
+		//TODO: set timeout
 		server.start();
 	}
 	
-	/*private Server createServer(int port) {
-		Server server = new Server();
-		ServerConnector connector = new ServerConnector(server);
-		connector.setPort(port);
-		connector.setIdleTimeout(idleTimeout);
-		server.addConnector(connector);
-		return server;
-	}
-	
-	private ServletContextHandler createRootServletContext(Server server) {
-		ServletContextHandler context = new ServletContextHandler(
-				ServletContextHandler.SESSIONS);
-		context.setContextPath("/");
-		server.setHandler(context);
-		return context;
-	}
-	
-	private void setEventHandler(ServletContextHandler context)
-			throws DeploymentException {
-		ServerContainer wscontainer = WebSocketServerContainerInitializer
-				.configureContext(context);
-		WebSocketEndpoint.setChannel(channel);
-		wscontainer.addEndpoint(WebSocketEndpoint.class);
-		LOGGER.finest(String.format("This device is %s", channel.getAvailableNetworkDevice().getNetworkDeviceName()));
-	}
-
-	private void startServer() throws Exception {
-		server.start();
-		if(LOGGER.getLevel().intValue() <= Level.FINE.intValue()){
-			server.dump(System.err);
-		}
-		server.join();
-	}*/
 	
 	public void stop() throws Exception {
 		if (server != null){
