@@ -24,9 +24,15 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 
 	public void init(InitialProperties props, ConnectionManagerListener listener)
 			throws Exception {
+		Properties properties;
+		if(!(props instanceof Properties)){
+			properties = new Properties(props);
+		}else{
+			properties =  (Properties) props;
+		}
 		channel = new WebSocketChannelManager(listener);
 		WebSocketClient.setChannel(channel);
-		initProperties(new Properties(props));
+		initProperties(properties);
 	}
 
 	private void initProperties(Properties props) throws Exception {

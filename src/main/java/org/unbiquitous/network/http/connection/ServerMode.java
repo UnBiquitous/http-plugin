@@ -1,17 +1,12 @@
 package org.unbiquitous.network.http.connection;
 
-import java.util.logging.Logger;
-
 import org.unbiquitous.network.http.WebSocketConnectionManager;
 import org.unbiquitous.network.http.properties.WebSocketProperties;
 import org.unbiquitous.uos.core.InitialProperties;
-import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
 
 public class ServerMode implements WebSocketConnectionManager.Mode {
 	private static final int FIVE_MINUTES = 5*60*1000;
-
-	private static final Logger LOGGER = UOSLogging.getLogger();
 
 	private WebSocketServer server;
 	private Integer port = 8080;
@@ -21,7 +16,13 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 	private WebSocketChannelManager channel;
 
 	public void init(InitialProperties props, ConnectionManagerListener listener) {
-		initProperties(new Properties(props));
+		Properties properties;
+		if(!(props instanceof Properties)){
+			properties = new Properties(props);
+		}else{
+			properties =  (Properties) props;
+		}
+		initProperties(properties);
 		channel = new WebSocketChannelManager(listener);
 		channel.setRelayMode(relayDevices);
 		WebSocketServer.setChannel(channel);
