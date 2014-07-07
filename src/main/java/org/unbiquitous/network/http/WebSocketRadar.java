@@ -51,6 +51,9 @@ public class WebSocketRadar implements Radar {
 
 	public void stopRadar() {
 		running = false;
+		synchronized (lock) {
+			lock.notifyAll(); //Acorda a thread
+		}
 	}
 
 	public void setConnectionManager(ConnectionManager connectionManager) {

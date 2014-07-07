@@ -32,4 +32,13 @@ public class RadarTest extends WebSocketIntegrationBaseTest{
 		}, 4000);
 	}
 	
+	@Test public void radarMustDieWhenAsked(){
+		final int before = Thread.activeCount();
+		client.getUos().stop();
+		waitFor(new Condition<Void>() {
+			public boolean matches(Void arg0) {
+				return Thread.activeCount() == before-1;
+			};
+		}, 4000);
+	}
 }
