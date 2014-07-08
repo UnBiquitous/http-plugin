@@ -33,12 +33,30 @@ public class RadarTest extends WebSocketIntegrationBaseTest{
 	}
 	
 	@Test public void radarMustDieWhenAsked(){
-		final int before = Thread.activeCount();
+		assertThat(numberOfActiveRadars()).isEqualTo(2);
+		
 		client.getUos().stop();
 		waitFor(new Condition<Void>() {
 			public boolean matches(Void arg0) {
-				return Thread.activeCount() == before-1;
+				return numberOfActiveRadars() == 1;
 			};
 		}, 4000);
+	}
+
+	private int numberOfActiveRadars() {
+		Class<?> filterClass = WebSocketRadar.class;
+		return numberOfThreadsRunning(filterClass);
+	}
+
+	private int numberOfThreadsRunning(Class<?> filterClass) {
+		int numberOfRadars = 0;
+		for (Thread t : Thread.getAllStackTraces().keySet()){
+			for(StackTraceElement s : t.getStackTrace()){
+				if(s.getClassName().equals(filterClass.getName())){
+					numberOfRadars ++;
+				}
+			}
+		}
+		return numberOfRadars;
 	}
 }
