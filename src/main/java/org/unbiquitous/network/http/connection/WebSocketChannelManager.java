@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import org.java_websocket.WebSocket;
 import org.unbiquitous.network.http.WebSocketRadar;
+import org.unbiquitous.network.http.properties.WebSocketProperties;
 import org.unbiquitous.uos.core.UOSLogging;
 import org.unbiquitous.uos.core.network.connectionManager.ChannelManager;
 import org.unbiquitous.uos.core.network.connectionManager.ConnectionManagerListener;
@@ -31,9 +32,13 @@ public class WebSocketChannelManager implements ChannelManager {
 	private Queue<WebSocketDevice> enteredQueue = new ArrayDeque<WebSocketDevice>();
 	private WebSocketRadar radar;
 	private boolean relayMode = false;
+	private Integer messageBufferSize = 2048;
 
-	public WebSocketChannelManager(ConnectionManagerListener listener) {
+	public WebSocketChannelManager(WebSocketProperties properties, ConnectionManagerListener listener) {
 		this.listener = listener;
+		if(properties.getMessageBufferSize() != null){
+			this.messageBufferSize  = properties.getMessageBufferSize();
+		}
 	}
 
 	public void setRelayMode(boolean relayMode) {
@@ -50,8 +55,11 @@ public class WebSocketChannelManager implements ChannelManager {
 		return device;
 	}
 
-	public void tearDown() throws NetworkException, IOException {
+	public Integer getMessageBufferSize() {
+		return messageBufferSize;
 	}
+	
+	public void tearDown() throws NetworkException, IOException {}
 
 	public void addConnection(String uuid, WebSocket session) {
 		deviceUUIDToSession.put(uuid, session);

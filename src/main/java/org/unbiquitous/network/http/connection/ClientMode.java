@@ -30,7 +30,7 @@ public class ClientMode implements WebSocketConnectionManager.Mode {
 		}else{
 			properties =  (Properties) props;
 		}
-		channel = new WebSocketChannelManager(listener);
+		channel = new WebSocketChannelManager(properties, listener);
 		WebSocketClient.setChannel(channel);
 		initProperties(properties);
 	}

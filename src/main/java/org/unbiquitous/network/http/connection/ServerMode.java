@@ -23,7 +23,7 @@ public class ServerMode implements WebSocketConnectionManager.Mode {
 			properties =  (Properties) props;
 		}
 		initProperties(properties);
-		channel = new WebSocketChannelManager(listener);
+		channel = new WebSocketChannelManager(properties, listener);
 		channel.setRelayMode(relayDevices);
 		WebSocketServer.setChannel(channel);
 		

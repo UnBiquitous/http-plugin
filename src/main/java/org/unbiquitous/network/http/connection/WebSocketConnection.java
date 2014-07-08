@@ -137,9 +137,9 @@ class ClientServerConnection extends WebSocketConnection {
 	private void initStreams() {
 		try {
 			inWriter = new PipedOutputStream();
-			in = new PipedInputStream(inWriter);
+			in = new PipedInputStream(inWriter,channel.getMessageBufferSize());
 			out = new ByteArrayOutputSessionStream(this);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

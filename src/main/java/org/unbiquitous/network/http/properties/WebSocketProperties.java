@@ -32,4 +32,12 @@ public class WebSocketProperties extends InitialProperties{
 	public Integer getPort(){
 		return getInt("ubiquitos.websocket.port");
 	}
+	
+	public void setMessageBufferSize(Integer port){
+		put("ubiquitos.websocket.messageBufferSize", port);
+	}
+	
+	public Integer getMessageBufferSize(){
+		return getInt("ubiquitos.websocket.messageBufferSize");
+	}
 }
