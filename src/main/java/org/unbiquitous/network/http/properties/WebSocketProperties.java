@@ -13,10 +13,8 @@ public class WebSocketProperties extends InitialProperties{
 	
 	public WebSocketProperties(InitialProperties props) {
 		super(props);
-		String connMng = WebSocketConnectionManager.class.getName();
-		put("ubiquitos.connectionManager",connMng);
-		String radar = WebSocketRadar.class.getName();
-		put("ubiquitos.radar", radar+"("+connMng+")");
+		addConnectionManager(WebSocketConnectionManager.class);
+		addRadar(WebSocketRadar.class, WebSocketConnectionManager.class);
 	}
 	
 	public void setTimeout(Integer timeout){
@@ -33,5 +31,13 @@ public class WebSocketProperties extends InitialProperties{
 	
 	public Integer getPort(){
 		return getInt("ubiquitos.websocket.port");
+	}
+	
+	public void setMessageBufferSize(Integer port){
+		put("ubiquitos.websocket.messageBufferSize", port);
+	}
+	
+	public Integer getMessageBufferSize(){
+		return getInt("ubiquitos.websocket.messageBufferSize");
 	}
 }

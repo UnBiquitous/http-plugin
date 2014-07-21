@@ -5,7 +5,7 @@
 	<groupId>org.unbiquitous</groupId>
 	<artifactId>http-plugin</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>http-plugin</name>
 
 	<build>
@@ -14,58 +14,34 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
-			
-			<!-- 
-			.................................................. 
-			Plugin to compile jar with dependencies,
-			useful for non-maven Android projects 
-			..................................................
-			
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.9</version>
 				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
+					<skipTests>false</skipTests>
+					<forkMode>never</forkMode>
 				</configuration>
 			</plugin>
-			-->
-
 		</plugins>
 
 	</build>
 	<dependencies>
-
 		<dependency>
 			<groupId>org.unbiquitous</groupId>
 			<artifactId>uos-core</artifactId>
-			<version>3.1.0-SNAPSHOT</version>
+			<version>3.1.0</version>
 		</dependency>
-
-		<!-- To write basic javax.websocket against -->
+		<!-- WebSocket framework -->
 		<dependency>
-			<groupId>javax.websocket</groupId>
-			<artifactId>javax.websocket-api</artifactId>
-			<version>1.0</version>
+			<groupId>org.java-websocket</groupId>
+			<artifactId>Java-WebSocket</artifactId>
+			<version>1.3.0</version>
 		</dependency>
-		<!-- To run javax.websocket in embedded server -->
-		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>javax-websocket-server-impl</artifactId>
-			<version>9.1.0.v20131115</version>
-		</dependency>
-		<!-- To run javax.websocket client -->
-		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>javax-websocket-client-impl</artifactId>
-			<version>9.1.0.v20131115</version>
-		</dependency>
-
-
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -85,6 +61,12 @@
 			<version>1.9</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
+	
+	<repositories>
+		<repository>
+			<id>ubiquitos</id>
+			<url>http://ubiquitos.googlecode.com/svn/trunk/src/Java/maven/</url>
+		</repository>
+	</repositories>
 </project>

@@ -13,7 +13,8 @@ public class RelayDeviceDiscovery extends WebSocketIntegrationBaseTest {
 	private UOSProcess client_0;
 	private UOSProcess client_1;
 
-	@Before public void setup() { /*Override the default setup*/ }
+	@Before public void setup() { /*Override the default setup*/
+	}
 	
 	@After public void teardown() {
 		Thread.yield();
@@ -28,6 +29,8 @@ public class RelayDeviceDiscovery extends WebSocketIntegrationBaseTest {
 		client_0 = startClient(0);
 		client_1 = startClient(1);
 
+		Thread.yield();
+		
 		waitFor(new Condition() {
 			public boolean matches(Object arg0) {
 				return 	knowsThisNumberOfDevices(server.getUos(), 3) &&
@@ -39,7 +42,8 @@ public class RelayDeviceDiscovery extends WebSocketIntegrationBaseTest {
 				Gateway gateway = uos.getGateway();
 				return gateway.listDevices().size() == quantity;
 			}
-		}, 2000);
+		}, 20000);
+		
 	}
 	
 	
